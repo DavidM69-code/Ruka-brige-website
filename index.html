@@ -1,265 +1,167 @@
-<!DOCTYPE html>
-<html lang="hr">
+<!doctype html>
+
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruka Brige - Njega za starije osobe</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-        
-        body {
-            line-height: 1.6;
-            color: #333;
-            background-color: #f9f9f9;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #4a8fe7, #44c7f4);
-            color: white;
-            padding: 1rem 0;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-        
-        .logo span {
-            color: #ff7e5f;
-        }
-        
-        nav {
-            background-color: #333;
-            padding: 0.5rem;
-        }
-        
-        nav ul {
-            display: flex;
-            justify-content: center;
-            list-style: none;
-        }
-        
-        nav ul li {
-            margin: 0 1rem;
-        }
-        
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        
-        nav ul li a:hover {
-            background-color: #ff7e5f;
-        }
-        
-        .hero {
-            height: 60vh;
-            background: url('https://images.unsplash.com/photo-1603415526960-f7e0328b5f87?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') center/cover;       
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: white;
-            position: relative;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-        }
-        
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 800px;
-            padding: 2rem;
-        }
-        
-        .hero h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .btn {
-            display: inline-block;
-            background-color: #ff7e5f;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 5px;
-            text-decoration: none;
-            margin-top: 1rem;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        section {
-            padding: 3rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #4a8fe7;
-            font-size: 2rem;
-        }
-        
-        .services {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-        
-        .service {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-        }
-        
-        .service:hover {
-            transform: translateY(-10px);
-        }
-        
-        .service h3 {
-            color: #44c7f4;
-            margin-bottom: 1rem;
-        }
-        
-        .contact-info {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .contact-info p {
-            margin-bottom: 1rem;
-        }
-        
-        footer {
-            background: #333;
-            color: white;
-            text-align: center;
-            padding: 2rem;
-            margin-top: 2rem;
-        }
-        
-        @media (max-width: 768px) {
-            nav ul {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            nav ul li {
-                margin: 0.5rem 0;
-            }
-            
-            .hero h1 {
-                font-size: 2rem;
-            }
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>iPear — The Shape of the Future</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff; --muted:#6b6f76; --accent:#0a84ff; --glass:rgba(10,10,10,0.03);
+    --card:#fbfcfd; --radius:24px; --shadow: 0 8px 30px rgba(15,20,30,0.08);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;color:#0b1220}
+  body{background:linear-gradient(180deg,#fff,#f7fafc);-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}/* page layout */ header{padding:32px 6vw;display:flex;align-items:center;justify-content:space-between} .brand{display:flex;gap:12px;align-items:center} .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#e6f5ff,#dff8ff);display:grid;place-items:center;font-weight:800;color:var(--accent);box-shadow:var(--shadow)} nav{display:flex;gap:18px;align-items:center} nav a{font-weight:600;color:var(--muted)} .hero{display:grid;grid-template-columns:1fr 520px;gap:48px;padding:40px 6vw;align-items:center}
+
+/* left content */ .eyebrow{color:var(--accent);font-weight:700;letter-spacing:.6px} h1{font-size:clamp(2.1rem,4vw,3.4rem);margin:.4rem 0 0;line-height:1.02} p.lead{color:var(--muted);max-width:56ch;margin-top:12px} .cta-row{display:flex;gap:12px;margin-top:22px} .btn{padding:12px 18px;border-radius:12px;border:none;font-weight:700;cursor:pointer} .btn-primary{background:var(--accent);color:white;box-shadow:0 8px 30px rgba(10,132,255,0.14)} .btn-ghost{background:transparent;border:1px solid var(--glass);color:var(--muted)}
+
+/* right showcase */ .stage{position:relative;height:560px;display:grid;place-items:center} .phone-wrap{width:360px;height:560px;display:grid;place-items:center;transform-style:preserve-3d;transition:transform .2s ease-out} .phone-shadow{position:absolute;bottom:40px;width:360px;height:80px;border-radius:50%;background:radial-gradient(closest-side,rgba(10,10,10,0.08),transparent);filter:blur(18px);z-index:0}
+
+/* pear phone art — SVG container */ .phone-svg{width:78%;height:auto;transform-origin:center center;will-change:transform} .floating{position:absolute;inset:auto auto 8% 6%;width:140px;background:linear-gradient(180deg,#fff,#fbfcfd);border-radius:16px;padding:12px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+
+/* sections */ section{padding:120px 6vw;border-top:1px solid var(--glass);background:white} .specs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1200px;margin:40px auto} .spec{background:var(--card);border-radius:14px;padding:18px;box-shadow:var(--shadow)} .spec h3{margin:0 0 8px} .spec p{margin:0;color:var(--muted)}
+
+/* rotating reveal area */ .reveal{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center;max-width:1200px;margin:0 auto} .reveal .phone-big{width:420px;height:760px;margin:auto;display:grid;place-items:center;position:relative} .phone-3d{width:60%;transform-style:preserve-3d;will-change:transform;transition:transform .12s linear} .spec-list{padding:20px} .spec-list li{margin:12px 0;font-weight:600;color:#0b1220}
+
+footer{padding:40px 6vw;text-align:center;color:var(--muted)}
+
+/* responsive */ @media(max-width:980px){.hero{grid-template-columns:1fr;}.stage{height:420px}.specs{grid-template-columns:repeat(2,1fr)}.reveal{grid-template-columns:1fr} .phone-big{order:-1}} </style>
+
 </head>
 <body>
-    <header>
-        <div class="logo">Ruka <span>Brige</span></div>
-        <p>Briga i podrška za starije osobe</p>
-    </header>
-    
+  <header>
+    <div class="brand"><div class="logo">🍐</div><div><strong>iPear</strong><div style="font-size:12px;color:var(--muted)">The shape of the future</div></div></div>
     <nav>
-        <ul>
-            <li><a href="#home">Početna</a></li>
-            <li><a href="#services">Usluge</a></li>
-            <li><a href="#about">O nama</a></li>
-            <li><a href="#contact">Kontakt</a></li>
-        </ul>
+      <a href="#features">Features</a>
+      <a href="#specs">Specs</a>
+      <a href="#preorder" class="btn btn-ghost">Pre-order</a>
     </nav>
-    
-    <section class="hero" id="home">
-        <div class="hero-content">
-            <h1>Dostojanstven život u zlatnim godinama</h1>
-            <p>Pružamo visokokvalitetne usluge njega i pomoći starijim osobama, osiguravajući im sigurnost i udobnost.</p>
-            <a href="#contact" class="btn">Kontaktirajte nas</a>
+  </header>  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">NEW PRODUCT</div>
+        <h1>Meet the <span style="color:var(--accent)">iPear</span> — a pear-shaped phone with an iPhone soul</h1>
+        <p class="lead">A premium mobile crafted to nestle in your palm. Curved pear silhouette, edge-to-edge custom OLED, advanced haptics and a magnetic aroma diffuser — everything designed around delight.</p>
+        <div class="cta-row">
+          <button class="btn btn-primary">Pre-order now</button>
+          <button class="btn btn-ghost">Watch video</button>
         </div>
-    </section>
-    
-    <section id="services">
-        <h2>Naše usluge</h2>
-        <div class="services">
-            <div class="service">
-                <h3>Kućna njega</h3>
-                <p>Profesionalna njega u udobnom okruženju vlastitog doma, uključujući pomoć u svakodnevnim aktivnostima.</p>
-            </div>
-            <div class="service">
-                <h3>Pratilac</h3>
-                <p>Druženje i pratnja u svakodnevnim aktivnostima, šetnje i razgovori.</p>
-            </div>
-            <div class="service">
-                <h3>Medicinska pomoć</h3>
-                <p>Stručna medicinska njega uključujući davanje lijekova i mjerenje vitalnih znakova.</p>
-            </div>
-            <div class="service">
-                <h3>Transport</h3>
-                <p>Siguran transport do liječnika, trgovine ili društvenih događaja.</p>
-            </div>
-            <div class="service">
-                <h3>Priprema obroka</h3>
-                <p>Planiranje i priprema zdravih obroka prilagođenih posebnim potrebama.</p>
-            </div>
-            <div class="service">
-                <h3>Rehabilitacija</h3>
-                <p>Individualni programi vježbi za održavanje fizičke sposobnosti.</p>
-            </div>
-        </div>
-    </section>
-    
-    <section id="about">
-        <h2>O nama</h2>
-        <div class="contact-info">
-            <p>Ruka Bridge je tvrtka posvećena pružanju kvalitetnih usluga njega za starije osobe. Naš tim stručnjaka s ljubavlju i poštovanjem pruža podršku kako bi poboljšao kvalitetu života naših klijenata.</p>
-            <p>Kroz godine želimo izgraditi povjerenje brojnih obitelji, postajući sinonim za kvalitetu i profesionalnost u njuzi starijih osoba.</p>
-        </div>
-    </section>
-    
-    <section id="contact">
-        <h2>Kontaktirajte nas</h2>
-        <div class="contact-info">
-            <p><strong>Adresa:</strong> Nova Bila Travnik</p>
-            <p><strong>Telefon:</strong> +387 063 123 456</p>
-            <p><strong>Email:</strong> info@rukabridge.ba</p>
-            <p><strong>Radno vrijeme:</strong> Pon-Pet: 8:00 - 16:00</p>
-            <a href="tel:+38512345678" class="btn">Nazovite nas</a>
-        </div>
-    </section>
-    
-    <footer>
-        <p>&copy; 2025 Ruka Bridge. Sva prava pridržana.</p>
-    </footer>
-</body>
+      </div><div class="stage">
+    <div class="phone-wrap" id="phoneWrap">
+      <svg class="phone-svg" viewBox="0 0 360 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/>
+            <stop offset="1" stop-color="#f2fff6"/>
+          </linearGradient>
+          <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e6f7ff" stop-opacity="0.7"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0.2"/>
+          </linearGradient>
+          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.08"/>
+          </filter>
+        </defs>
+
+        <!-- pear-shaped body -->
+        <path d="M180 16C226 16 258 68 258 116c0 44-23 94-74 141-44 39-93 66-110 80-24 19-30 50-30 70 0 28 20 50 48 50 28 0 48-22 48-50 0-22 9-32 35-50 42-29 110-72 136-120 18-35 12-86-26-120-26-23-57-27-85-27z" fill="url(#skin)" stroke="#f0fbf2" stroke-width="2" filter="url(#shadow)"/>
+
+        <!-- screen cutout -->
+        <ellipse cx="180" cy="164" rx="92" ry="140" fill="url(#glass)"/>
+
+        <!-- camera / pear-stem -->
+        <rect x="166" y="12" width="28" height="10" rx="4" fill="#ccdfe6" opacity="0.9" />
+
+        <!-- display content (mock) -->
+        <g transform="translate(120,80)">
+          <rect x="0" y="0" width="120" height="220" rx="20" fill="#0b1220"/>
+          <circle cx="60" cy="110" r="34" fill="#fff" opacity="0.06"/>
+        </g>
+      </svg>
+      <div class="phone-shadow"></div>
+    </div>
+    <div class="floating">Floating gallery</div>
+  </div>
+</section>
+
+<section id="features">
+  <h2 style="text-align:center;margin:0">Features</h2>
+  <p style="text-align:center;color:var(--muted);margin-top:8px">Turn the product to explore — scroll to rotate the phone and reveal specs.</p>
+  <div class="specs">
+    <div class="spec"><h3>Display</h3><p>6.4" PearEdge OLED — 120Hz, 1400 nits peak, adaptive refresh</p></div>
+    <div class="spec"><h3>Processor</h3><p>PearChip X1 — 5 nm, neural engine for on-device AI</p></div>
+    <div class="spec"><h3>Battery</h3><p>JuiceCell 4200 mAh with fast pear-charge (0–80% in 25 min)</p></div>
+    <div class="spec"><h3>Camera</h3><p>Triple-lens: 48MP wide, 12MP ultra, 8MP tele with pear‑portrait mode</p></div>
+    <div class="spec"><h3>Extras</h3><p>AR holographic calling, aroma diffuser, water resistance IP68</p></div>
+    <div class="spec"><h3>OS</h3><p>PearOS — privacy-first, rich widgets, and gesture-first navigation</p></div>
+  </div>
+</section>
+
+<section id="specs">
+  <div class="reveal">
+    <div class="phone-big">
+      <div class="phone-3d" id="phone3d">
+        <!-- layered SVGs for 3D-like rotation (front/side/back) -->
+        <svg viewBox="0 0 360 760" style="width:100%">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#f7fff2"/></linearGradient>
+          </defs>
+          <g id="front"><path d="M180 20C225 20 258 68 258 120c0 45-22 96-74 148-44 44-95 76-110 90-24 20-30 52-30 74 0 30 22 54 50 54 28 0 50-24 50-54 0-24 10-36 36-56 42-34 110-80 136-132 18-38 12-93-26-130-26-25-58-30-86-30z" fill="url(#g1)" stroke="#eef9ee" stroke-width="2"/></g>
+        </svg>
+      </div>
+    </div>
+    <div class="spec-list">
+      <h3 style="margin-top:0">Complete Specs</h3>
+      <ul style="padding:0 0 0 18px;margin:12px 0;color:var(--muted)">
+        <li>Dimensions: 160 × 84 × 8.7 mm (pear-profile)</li>
+        <li>Weight: 185 g</li>
+        <li>Display: 6.4" PearEdge OLED, 120Hz</li>
+        <li>CPU: PearChip X1, Octa-core</li>
+        <li>Battery: 4200 mAh, PearCharge 65W</li>
+        <li>Cameras: 48MP + 12MP + 8MP</li>
+        <li>RAM / Storage: 8 / 128, 12 / 256, 12 / 512</li>
+        <li>Sensors: FacePear, under-screen touch ID, LiDAR</li>
+        <li>Special: Aromatic diffuser (optional), HoloCall projector</li>
+      </ul>
+      <div style="margin-top:18px"><button class="btn btn-primary">Choose configuration</button></div>
+    </div>
+  </div>
+</section>
+
+  </main>  <footer>
+    © <strong>iPear</strong> — Crafted with care. Prototype only.
+  </footer><script>
+  // Scroll-driven rotation: rotates phone between -40deg (front) to 220deg (back) as user scrolls through #specs section
+  const phone3d = document.getElementById('phone3d');
+  const reveal = document.getElementById('specs');
+
+  function updatePhoneRotation(){
+    const rect = document.getElementById('specs')?.getBoundingClientRect();
+    if(!rect) return;
+    const vh = window.innerHeight;
+    const progress = Math.min(1, Math.max(0, (vh - rect.top) / (vh + rect.height)));
+    // map progress 0..1 to rotation 0..360 (tweak for nicer motion)
+    const deg = progress * 360;
+    phone3d.style.transform = `rotateY(${deg}deg) translateZ(0)`;
+  }
+  window.addEventListener('scroll', updatePhoneRotation, {passive:true});
+  window.addEventListener('resize', updatePhoneRotation);
+  updatePhoneRotation();
+
+  // subtle floating animation for the hero phone
+  const phoneWrap = document.getElementById('phoneWrap');
+  let t = 0;
+  function floatLoop(){
+    t += 0.02;
+    phoneWrap.style.transform = `translateY(${Math.sin(t)*6}px) rotateX(${Math.sin(t/3)*2}deg)`;
+    requestAnimationFrame(floatLoop);
+  }
+  requestAnimationFrame(floatLoop);
+
+  // basic keyboard shortcuts
+  addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='h') alert('Scroll to rotate the iPear. Click Pre-order to simulate checkout.') });
+</script></body>
 </html>
