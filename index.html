@@ -152,10 +152,90 @@ svg#lines{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:n
     const LEVELS_PER_TIER = 100;
 
     // For demo: small sample for Level 1 only. Real usage: import a JSON file with all levels.
-    const SAMPLE_STAGE = {
-      de: ['Hund','Katze','Haus','Baum','Wasser','Brot','Straße','Himmel','Auto','Stadt'],
-      en: ['Dog','Cat','House','Tree','Water','Bread','Street','Sky','Car','City']
-    };
+    const LEVELS = {
+  "A1": {
+    "1": {
+      "de": ["ich","sein","haben","nicht","und","er","sie","wir","ihr","sie (they)"],
+      "en": ["I","to be","to have","not","and","he","she","we","you (pl)","they"]
+    },
+    "2": {
+      "de": ["ein","eine","der","die","das","in","zu","mit","auf","für"],
+      "en": ["a / an (m)","a / an (f)","the (m)","the (f)","the (n)","in","to","with","on","for"]
+    },
+    "3": {
+      "de": ["nicht","ja","nein","aber","oder","weil","wenn","wo","dort","hier"],
+      "en": ["not","yes","no","but","or","because","if","where","there","here"]
+    },
+    "4": {
+      "de": ["sprechen","verstehen","kennen","gehen","kommen","machen","sehen","geben","nehmen","essen"],
+      "en": ["to speak","to understand","to know","to go","to come","to do/make","to see","to give","to take","to eat"]
+    },
+    "5": {
+      "de": ["Wasser","Brot","Stadt","Haus","Auto","Tag","Nacht","Mensch","Freund","Frau"],
+      "en": ["water","bread","city","house","car","day","night","person","friend","woman"]
+    },
+    "6": {
+      "de": ["Mann","Kind","Schule","Lehrer","Stuhl","Tisch","Buch","Fenster","Tür","Straße"],
+      "en": ["man","child","school","teacher","chair","table","book","window","door","street"]
+    },
+    "7": {
+      "de": ["laufen","rennen","springen","schwimmen","sitzen","stehen","liegen","lesen","schreiben","hören"],
+      "en": ["to walk","to run","to jump","to swim","to sit","to stand","to lie","to read","to write","to listen"]
+    },
+    "8": {
+      "de": ["gut","schlecht","heiß","kalt","groß","klein","alt","jung","neu","alt (old)"],
+      "en": ["good","bad","hot","cold","big","small","old","young","new","old"]
+    },
+    "9": {
+      "de": ["rot","blau","grün","gelb","weiß","schwarz","braun","orange","rosa","lila"],
+      "en": ["red","blue","green","yellow","white","black","brown","orange","pink","purple"]
+    },
+    "10": {
+      "de": ["früh","spät","heute","morgen","gestern","immer","nie","oft","manchmal","selten"],
+      "en": ["early","late","today","tomorrow","yesterday","always","never","often","sometimes","rarely"]
+    },
+    "11": {
+      "de": ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag","Januar","Februar","März"],
+      "en": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","January","February","March"]
+    },
+    "12": {
+      "de": ["April","Mai","Juni","Juli","August","September","Oktober","November","Dezember","Jahr"],
+      "en": ["April","May","June","July","August","September","October","November","December","year"]
+    },
+    "13": {
+      "de": ["heute","gestern","morgen","jetzt","später","früh","spät","immer","oft","selten"],
+      "en": ["today","yesterday","tomorrow","now","later","early","late","always","often","rarely"]
+    },
+    "14": {
+      "de": ["Haus","Zimmer","Küche","Bad","Schlafzimmer","Wohnzimmer","Tür","Fenster","Garten","Balkon"],
+      "en": ["house","room","kitchen","bathroom","bedroom","living room","door","window","garden","balcony"]
+    },
+    "15": {
+      "de": ["essen","trinken","schlafen","laufen","spielen","lernen","arbeiten","fahren","fliegen","kochen"],
+      "en": ["to eat","to drink","to sleep","to walk","to play","to learn","to work","to drive","to fly","to cook"]
+    },
+    "16": {
+      "de": ["Familie","Eltern","Bruder","Schwester","Onkel","Tante","Cousin","Großvater","Großmutter","Kind"],
+      "en": ["family","parents","brother","sister","uncle","aunt","cousin","grandfather","grandmother","child"]
+    },
+    "17": {
+      "de": ["rot","blau","grün","gelb","weiß","schwarz","braun","orange","rosa","lila"],
+      "en": ["red","blue","green","yellow","white","black","brown","orange","pink","purple"]
+    },
+    "18": {
+      "de": ["heiß","kalt","warm","kühl","trocken","nass","schnell","langsam","leicht","schwer"],
+      "en": ["hot","cold","warm","cool","dry","wet","fast","slow","easy","heavy"]
+    },
+    "19": {
+      "de": ["glücklich","traurig","müde","aufgeregt","wütend","ängstlich","hungrig","durstig","krank","gesund"],
+      "en": ["happy","sad","tired","excited","angry","afraid","hungry","thirsty","sick","healthy"]
+    },
+    "20": {
+      "de": ["sehen","hören","fühlen","riechen","schmecken","denken","wissen","glauben","erinnern","vergessen"],
+      "en": ["to see","to hear","to feel","to smell","to taste","to think","to know","to believe","to remember","to forget"]
+    }
+  }
+}
 
     // Store levels as { tier: { levelIndex: {de:[],en:[]}}}
     let LEVELS = {};
