@@ -47,7 +47,7 @@
 .col{flex:1}
 .word-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .word-btn{background:#fff;border-radius:10px;padding:12px;text-align:center;cursor:pointer;border:2px solid rgba(2,6,23,0.04);transition:background .15s,transform .12s}
-.word-btn.selected{background:#999;color:#000}
+.word-btn.selected{background:#999;color:#fff}
 .word-btn.correct{background:var(--green);color:#062014}
 .word-btn.wrong{animation:wrongFade .5s forwards}
 @keyframes wrongFade{0%{background:var(--red);color:#fff}100%{background:#fff;color:#07121b}}
@@ -144,14 +144,15 @@ svg#lines{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:n
   </div>
 </div>
 
-  </div>   <script>
-/***** DATA MODEL *****/
-// Tiers A1..C2
-const TIERS = ['A1','A2','B1','B2','C1','C2'];
-const LEVELS_PER_TIER = 100;
+  </div>  <script>
+    /***** DATA MODEL *****/
+    // Tiers A1..C2
+    const TIERS = ['A1','A2','B1','B2','C1','C2'];
+    // levelsPerTier -> 100 each
+    const LEVELS_PER_TIER = 100;
 
-// Sample: 20 A1 levels with real words
-const LEVELS = {
+    // For demo: small sample for Level 1 only. Real usage: import a JSON file with all levels.
+    const SAMPLE_STAGE = {
   "A1": {
     "1": { de:["ich","sein","haben","nicht","und","er","sie","wir","ihr","sie (they)"], en:["I","to be","to have","not","and","he","she","we","you (pl)","they"] },
     "2": { de:["ein","eine","der","die","das","in","zu","mit","auf","für"], en:["a / an (m)","a / an (f)","the (m)","the (f)","the (n)","in","to","with","on","for"] },
@@ -176,81 +177,148 @@ const LEVELS = {
   }
 };
 
-// Fill empty tiers with placeholders
-TIERS.forEach(t=>{
-  if(!LEVELS[t]) LEVELS[t] = {};
-  for(let i=1;i<=LEVELS_PER_TIER;i++){
-    if(!LEVELS[t][i]) LEVELS[t][i] = {de:[], en:[]};
-  }
-});
+    // Store levels as { tier: { levelIndex: {de:[],en:[]}}}
+    let LEVELS = {};
+    TIERS.forEach(t=>{ LEVELS[t] = {}; for(let i=1;i<=LEVELS_PER_TIER;i++){ LEVELS[t][i] = (i===1 && t==='A1') ? SAMPLE_STAGE : {de:[],en:[]} } });
 
-// progress stored in localStorage
-const STORAGE_KEY = 'gm_progress_v2';
-let state = {
-  xp:0, streak:0, crowns:0, sound:true,
-  levelStatus:{}, current:{tier:'A1',level:1}
-};
+    // progress stored in localStorage
+    const STORAGE_KEY = 'gm_progress_v2';
+    const PROFILE_KEY = 'gm_profile_v2';
 
-function initState(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw){ try{ state = JSON.parse(raw); }catch(e){} }
-  TIERS.forEach(t=>{
-    if(!state.levelStatus[t]){ state.levelStatus[t] = Array(LEVELS_PER_TIER).fill('locked'); state.levelStatus[t][0] = 'unlocked'; }
-  });
-  save();
-}
+    let state = {
+      xp:0, streak:0, crowns:0, sound:true,
+      // unlocked levels: per tier array 'locked','unlocked','completed'
+      levelStatus: {},
+      current:{tier:'A1',level:1}
+    };
 
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateUI(); }
-function exportProgress(){ const blob = new Blob([JSON.stringify(state)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;a.download='gm_progress.json';a.click();URL.revokeObjectURL(url); }
-function importProgress(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); save(); alert('Imported'); }catch(e){alert('Bad file')} }; r.readAsText(f); }
-
-/***** UI INIT *****/
-const mapPath = document.getElementById('mapPath');
-const tierSelect = document.getElementById('tierSelect');
-const levelSelect = document.getElementById('level-select');
-
-function buildMap(){ mapPath.innerHTML='';
-  TIERS.forEach((t,ti)=>{
-    const group = document.createElement('div'); group.style.display='flex'; group.style.alignItems='center'; group.style.gap='10px';
-    for(let i=0;i<10;i++){
-      const idx = ti*10 + i + 1;
-      const node = document.createElement('div'); node.className='node '+getStatusClass(t, idx);
-      node.innerText = (idx<=LEVELS_PER_TIER)? idx : '';
-      node.onclick = ()=>{ if(getStatus(t, idx)!=='locked'){ openLevel(t, Math.min(idx,LEVELS_PER_TIER)) } };
-      group.appendChild(node);
+    function initState(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ try{ state = JSON.parse(raw); }catch(e){} }
+      // ensure levelStatus structure
+      TIERS.forEach(t=>{
+        if(!state.levelStatus[t]){ state.levelStatus[t] = Array(LEVELS_PER_TIER).fill('locked'); state.levelStatus[t][0] = 'unlocked'; }
+      });
+      save();
     }
-    const label = document.createElement('div'); label.style.color='var(--muted)'; label.style.marginLeft='10px'; label.innerText=t;
-    mapPath.appendChild(group); mapPath.appendChild(label);
-  });
-}
 
-function getStatus(tier, level){ return state.levelStatus[tier][level-1]; }
-function getStatusClass(tier, level){ const s = getStatus(tier, level); if(!s) return 'locked'; return s; }
+    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateUI(); }
 
-function updateUI(){ document.getElementById('xp').innerText = 'XP: ' + state.xp; document.getElementById('streak').innerText = 'Streak: ' + state.streak + ' 🔥'; document.getElementById('crowns').innerText = 'Crowns: ' + state.crowns + ' 👑'; buildMap(); generateLevelButtons(); }
+    function exportProgress(){ const blob = new Blob([JSON.stringify(state)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;a.download='gm_progress.json';a.click();URL.revokeObjectURL(url); }
+    function importProgress(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); save(); alert('Imported'); }catch(e){alert('Bad file')} }; r.readAsText(f); }
 
-function populateTierSelect(){ tierSelect.innerHTML=''; TIERS.forEach(t=>{ const opt=document.createElement('option'); opt.value=t; opt.innerText=t; tierSelect.appendChild(opt); }); }
-function tierChanged(t){ generateLevelButtons(t); }
+    /***** UI INIT *****/
+    const mapPath = document.getElementById('mapPath');
+    const tierSelect = document.getElementById('tierSelect');
+    const levelSelect = document.getElementById('level-select');
 
-function generateLevelButtons(selectedTier){ levelSelect.innerHTML=''; const tier = selectedTier || TIERS[0]; for(let i=1;i<=LEVELS_PER_TIER;i++){ const btn = document.createElement('button'); btn.className='level-btn '+getStatusClass(tier,i); btn.innerText='Level '+i; btn.onclick = ()=>{ if(getStatus(tier,i)!=='locked') loadLevel(tier,i); }; levelSelect.appendChild(btn); } }
+    function buildMap(){ mapPath.innerHTML='';
+      TIERS.forEach((t,ti)=>{
+        const group = document.createElement('div'); group.style.display='flex'; group.style.alignItems='center'; group.style.gap='10px';
+        for(let i=0;i<10;i++){ // show 10 nodes per tier on map preview (for performance)
+          const idx = ti*10 + i + 1;
+          const node = document.createElement('div'); node.className='node '+getStatusClass(t, idx);
+          node.innerText = (idx<=LEVELS_PER_TIER)? idx : '';
+          node.onclick = ()=>{ if(getStatus(t, idx)!=='locked'){ openLevel(t, Math.min(idx,LEVELS_PER_TIER)) } };
+          group.appendChild(node);
+        }
+        const label = document.createElement('div'); label.style.color='var(--muted)'; label.style.marginLeft='10px'; label.innerText=t;
+        mapPath.appendChild(group); mapPath.appendChild(label);
+      });
+    }
 
-function openLevel(tier, level){ state.current.tier = tier; state.current.level = level; save(); enterGame(); loadLevel(tier, level); }
+    function getStatus(tier, level){ return state.levelStatus[tier][level-1]; }
+    function getStatusClass(tier, level){ const s = getStatus(tier, level); if(!s) return 'locked'; return s; }
 
-function loadLevel(tier, level){
-  document.getElementById('game-tier').innerText = tier; document.getElementById('game-level').innerText = level;
-  const left = document.getElementById('leftCol'); const right = document.getElementById('rightCol'); left.innerHTML=''; right.innerHTML=''; document.getElementById('lines').innerHTML='';
-  const stage = (LEVELS[tier] && LEVELS[tier][level] && LEVELS[tier][level].de.length>0) ? LEVELS[tier][level] : {de:[], en:[]};
-  const items = stage.de.map((g,i)=>({g, e:stage.en[i], pair:i}));
-  const leftItems = shuffle(items.map(it=>({...it})));
-  const rightItems = shuffle(items.map(it=>({...it})));
-  leftItems.forEach((it,idx)=>{ const b=document.createElement('div'); b.className='word-btn'; b.innerText=it.g; b.dataset.pair = it.pair; b.dataset.side='g'; b.dataset.idx=idx; b.onclick=()=>selectBtn(b); left.appendChild(b); });
-  rightItems.forEach((it,idx)=>{ const b=document.createElement('div'); b.className='word-btn'; b.innerText=it.e; b.dataset.pair = it.pair; b.dataset.side='e'; b.dataset.idx=idx; b.onclick=()=>selectBtn(b); right.appendChild(b); });
-  document.getElementById('attempts').innerText = 0; attempts=0; correctPairs=0; selectedBtn=null; sessionPairs = items.length;
-}
+    function updateUI(){ document.getElementById('xp').innerText = 'XP: ' + state.xp; document.getElementById('streak').innerText = 'Streak: ' + state.streak + ' 🔥'; document.getElementById('crowns').innerText = 'Crowns: ' + state.crowns + ' 👑'; buildMap(); generateLevelButtons(); }
 
-// ... keep the rest of your game logic and UI functions unchanged ...
+    function populateTierSelect(){ tierSelect.innerHTML=''; TIERS.forEach(t=>{ const opt=document.createElement('option'); opt.value=t; opt.innerText=t; tierSelect.appendChild(opt); }); }
 
-/***** BOOT *****/
-initState(); populateTierSelect(); generateLevelButtons(); buildMap(); updateUI();
-window.importProgress = importProgress; window.enterLevelSelect = enterLevelSelect; window.backToMain = backToMain; window.backToLevelSelect = backToLevelSelect; window.retryLevel = retryLevel; window.toggleSound = toggleSound; window.exportProgress = exportProgress;
-</script>
+    function tierChanged(t){ generateLevelButtons(t); }
+
+    function generateLevelButtons(selectedTier){ levelSelect.innerHTML=''; const tier = selectedTier || TIERS[0]; for(let i=1;i<=LEVELS_PER_TIER;i++){ const btn = document.createElement('button'); btn.className='level-btn '+getStatusClass(tier,i); btn.innerText='Level '+i; btn.onclick = ()=>{ if(getStatus(tier,i)!=='locked') loadLevel(tier,i); }; levelSelect.appendChild(btn); } }
+
+    function openLevel(tier, level){ state.current.tier = tier; state.current.level = level; save(); enterGame(); loadLevel(tier, level); }
+
+    function loadLevel(tier, level){ // load words and render
+      document.getElementById('game-tier').innerText = tier; document.getElementById('game-level').innerText = level;
+      const left = document.getElementById('leftCol'); const right = document.getElementById('rightCol'); left.innerHTML=''; right.innerHTML=''; document.getElementById('lines').innerHTML='';
+      // if LEVELS has no data for this level, fill with placeholders
+      const stage = (LEVELS[tier] && LEVELS[tier][level] && LEVELS[tier][level].de.length>0) ? LEVELS[tier][level] : SAMPLE_STAGE;
+      const items = stage.de.map((g,i)=>({g, e:stage.en[i], pair:i}));
+      // create shuffled left/right sets
+      const leftItems = shuffle(items.map(it=>({...it})));
+      const rightItems = shuffle(items.map(it=>({...it})));
+      leftItems.forEach((it,idx)=>{ const b=document.createElement('div'); b.className='word-btn'; b.innerText=it.g; b.dataset.pair = it.pair; b.dataset.side='g'; b.dataset.idx=idx; b.onclick=()=>selectBtn(b); left.appendChild(b); });
+      rightItems.forEach((it,idx)=>{ const b=document.createElement('div'); b.className='word-btn'; b.innerText=it.e; b.dataset.pair = it.pair; b.dataset.side='e'; b.dataset.idx=idx; b.onclick=()=>selectBtn(b); right.appendChild(b); });
+      // show game page
+      document.getElementById('attempts').innerText = 0; attempts=0; correctPairs=0; selectedBtn=null; sessionPairs = items.length;
+    }
+
+    /***** NAVIGATION ANIMATIONS *****/
+    function enterLevelSelect(){ document.getElementById('main').style.display='none'; document.getElementById('level-page').style.display='block'; setTimeout(()=>{ document.getElementById('level-page').style.opacity=1; },10); }
+    function backToMain(){ document.getElementById('level-page').style.opacity=0; setTimeout(()=>{ document.getElementById('level-page').style.display='none'; document.getElementById('main').style.display='block'; },200); }
+    function enterGame(){ document.getElementById('level-page').style.opacity=0; setTimeout(()=>{ document.getElementById('level-page').style.display='none'; document.getElementById('game-page').style.display='block'; setTimeout(()=>{ document.getElementById('game-page').style.opacity=1; },10); },200); }
+    function backToLevelSelect(){ document.getElementById('game-page').style.opacity=0; setTimeout(()=>{ document.getElementById('game-page').style.display='none'; document.getElementById('level-page').style.display='block'; setTimeout(()=>{ document.getElementById('level-page').style.opacity=1; },10); },200); }
+
+    /***** GAME LOGIC *****/
+    let selectedBtn = null; let attempts=0; let correctPairs=0; let sessionPairs=0; let sessionLines=[];
+    function selectBtn(btn){ if(btn.classList.contains('correct')) return;
+      if(!selectedBtn){ // pick first
+        selectedBtn = btn; btn.classList.add('selected');
+      } else {
+        // second pick
+        attempts++; document.getElementById('attempts').innerText = attempts;
+        const pairA = selectedBtn.dataset.pair; const pairB = btn.dataset.pair; const sideA = selectedBtn.dataset.side; const sideB = btn.dataset.side;
+        // must be opposite sides
+        if(sideA === sideB){ // invalid
+          // flash wrong both
+          flashWrong(selectedBtn); flashWrong(btn); selectedBtn.classList.remove('selected'); selectedBtn=null; return; }
+        if(pairA === pairB){ // correct
+          markCorrect(selectedBtn, btn);
+        } else { // wrong
+          flashWrong(selectedBtn); flashWrong(btn);
+        }
+        selectedBtn.classList.remove('selected'); selectedBtn=null;
+      }
+    }
+
+    function markCorrect(a,b){ a.classList.add('correct'); b.classList.add('correct'); playSound('correct'); drawConnection(a,b,'#00c853'); correctPairs++; // award xp
+      state.xp += 10; save(); if(correctPairs>=sessionPairs){ levelCompleted(); } }
+
+    function flashWrong(a){ a.classList.add('wrong'); playSound('wrong'); setTimeout(()=>{ a.classList.remove('wrong'); },500); state.xp += 1; save(); }
+
+    function levelCompleted(){ // mark level complete and give rewards
+      const t = state.current.tier, l = state.current.level; state.levelStatus[t][l-1] = 'completed'; // unlock next
+      if(l < LEVELS_PER_TIER) state.levelStatus[t][l] = 'unlocked'; else { // unlock first of next tier
+        const ti = TIERS.indexOf(t); if(ti+1<TIERS.length) state.levelStatus[TIERS[ti+1]][0] = 'unlocked'; }
+      state.streak +=1; state.crowns +=1; state.xp += 50; save(); playSound('levelup'); // animate UI
+      // color the node green on map
+      setTimeout(()=>{ generateLevelButtons(state.current.tier); buildMap(); alert('Level complete!'); backToLevelSelect(); },300);
+    }
+
+    function giveUp(){ if(confirm('Give up on this level?')){ backToLevelSelect(); } }
+
+    function retryLevel(){ loadLevel(state.current.tier, state.current.level); }
+
+    function toggleSound(){ state.sound = !state.sound; save(); }
+
+    function playSound(kind){ if(!state.sound) return; try{ if(kind==='correct'){ const o=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='); o.play(); } else if(kind==='wrong'){ const o=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='); o.play(); } else if(kind==='levelup'){ const o=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='); o.play(); } }catch(e){}
+    }
+
+    /***** DRAW CONNECTION LINE *****/
+    function drawConnection(a,b,color){ const svg = document.getElementById('lines'); const rA = a.getBoundingClientRect(); const rB = b.getBoundingClientRect(); const container = document.getElementById('canvas-wrap').getBoundingClientRect(); const x1 = rA.left + rA.width/2 - container.left; const y1 = rA.top + rA.height/2 - container.top; const x2 = rB.left + rB.width/2 - container.left; const y2 = rB.top + rB.height/2 - container.top; const line = document.createElementNS('http://www.w3.org/2000/svg','line'); line.setAttribute('x1',x1); line.setAttribute('y1',y1); line.setAttribute('x2',x2); line.setAttribute('y2',y2); line.setAttribute('stroke',color); line.setAttribute('stroke-width',4); line.setAttribute('stroke-linecap','round'); svg.appendChild(line); sessionLines.push(line); }
+
+    // small helper to create connection using animate
+    function createConnectionLine(btn1, btn2, color){ drawConnection(btn1, btn2, color); }
+
+    // util: shuffle
+    function shuffle(a){ const arr = a.slice(); for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+
+    /***** BOOT *****/
+    initState(); populateTierSelect(); generateLevelButtons(); buildMap(); updateUI();
+
+    // expose import handler
+    window.importProgress = importProgress; window.enterLevelSelect = enterLevelSelect; window.backToMain = backToMain; window.backToLevelSelect = backToLevelSelect; window.retryLevel = retryLevel; window.toggleSound = toggleSound; window.exportProgress = exportProgress;
+  </script></body>
+</html>
