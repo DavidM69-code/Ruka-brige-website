@@ -1,326 +1,365 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>German Match — Duolingo-style Trainer</title>
-  <style>
-    :root{
-      --bg:#0f1724; --card:#0b1220; --accent:#ff9500; --muted:#94a3b8; --white:#ffffff; --green:#00c853; --red:#d50000;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,ui-sans-serif,system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;background:linear-gradient(180deg,#071326 0%, #071b2a 100%);color:var(--white);min-height:100vh}
-    .app{max-width:1100px;margin:24px auto;padding:20px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-    h1{font-size:20px;margin:0}
-    .meta{display:flex;gap:12px;align-items:center}
-    .badge{background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:999px;font-size:13px;color:var(--muted)}/* Main screen */
-#main{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:18px;border-radius:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
-.hero{display:flex;gap:20px;align-items:center}
-.hero-left{flex:1}
-.hero-right{width:260px}
-.start-btn{background:var(--accent);color:#08121b;padding:12px 16px;border-radius:10px;font-weight:600;border:none;cursor:pointer}
+<meta charset="UTF-8">
+<title>German Match Trainer</title>
+<style>
+body {
+    background:#222;
+    margin:0;
+    font-family:Arial, sans-serif;
+    color:white;
+    overflow:hidden;
+}
 
-/* Map */
-.map{margin-top:18px;height:220px;overflow:auto;padding:12px}
-.path{display:flex;gap:18px;align-items:center;padding:12px}
-.node{width:68px;height:68px;border-radius:34px;background:#fff;color:#07121b;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;box-shadow:0 6px 12px rgba(2,6,23,0.5);transition:transform .2s,box-shadow .2s}
-.node.locked{background:#0b1320;color:#455569;box-shadow:none}
-.node.unlocked{background:#fff}
-.node.completed{background:var(--green);color:#062014}
-.node.current{border:3px solid var(--accent);transform:scale(1.07)}
+.screen {
+    display:none;
+    width:100vw;
+    height:100vh;
+    padding:20px;
+    box-sizing:border-box;
+}
 
-/* Level page */
-#level-page{display:none;opacity:0;transition:opacity .3s}
-.level-header{display:flex;align-items:center;justify-content:space-between;padding:12px}
-#level-select{display:flex;flex-wrap:wrap;gap:10px}
-.level-btn{padding:10px 12px;border-radius:10px;border:none;cursor:pointer;background:#fff;color:#07121b;min-width:110px}
-.level-btn.locked{background:#07121b;color:#334155;border:2px dashed rgba(255,255,255,0.03);cursor:not-allowed}
-.level-btn.unlocked{background:#fff}
-.level-btn.completed{background:var(--green);color:#061b0f}
-.level-grid{max-height:60vh;overflow:auto;padding:12px;border-radius:12px}
+.screen.active { display:block; }
 
-/* Game page */
-#game-page{display:none;opacity:0;transition:opacity .3s}
-.game-top{display:flex;align-items:center;gap:12px;justify-content:space-between}
-.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:14px;border-radius:12px}
-.grid-wrap{display:flex;gap:20px;margin-top:18px}
-.col{flex:1}
-.word-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.word-btn{background:#fff;border-radius:10px;padding:12px;text-align:center;cursor:pointer;border:2px solid rgba(2,6,23,0.04);transition:background .15s,transform .12s}
-.word-btn.selected{background:#999;color:#fff}
-.word-btn.correct{background:var(--green);color:#062014}
-.word-btn.wrong{animation:wrongFade .5s forwards}
-@keyframes wrongFade{0%{background:var(--red);color:#fff}100%{background:#fff;color:#07121b}}
+button {
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+    margin:4px;
+    transition:0.2s;
+    color:black !important;  /* BLACK TEXT */
+}
 
-/* SVG connections on top */
-#canvas-wrap{position:relative}
-svg#lines{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+/* Level buttons */
+.level-button.locked { background:#444; color:#000; }
+.level-button.unlocked { background:#ffa600; color:#000; }
+.level-button.completed { background:#39e64f; color:#000; }
 
-/* Footer controls */
-.controls{display:flex;gap:8px;align-items:center;margin-top:14px}
-.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white);padding:8px 10px;border-radius:8px;cursor:pointer}
+/* Word buttons */
+.word-button {
+    width:45%;
+    background:#f0f0f0;
+    color:black !important;
+    border-radius:10px;
+}
 
-/* small screens */
-@media(max-width:880px){.grid-wrap{flex-direction:column}.hero-right{display:none}}
+/* Map nodes */
+#mapPath circle.locked { fill:#444; }
+#mapPath circle.unlocked { fill:#ff9800; }
+#mapPath circle.completed { fill:#4caf50; }
 
-  </style>
+#leftCol, #rightCol {
+    position:absolute;
+    top:120px;
+    width:45%;
+    height:70%;
+    overflow:auto;
+}
+
+#leftCol { left:5%; }
+#rightCol { right:5%; }
+
+#lineArea {
+    position:absolute;
+    top:120px;
+    left:0;
+    width:100%;
+    height:70%;
+    pointer-events:none;
+}
+</style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>German Match — Trainer</h1>
-      <div class="meta">
-        <div class="badge" id="xp">XP: 0</div>
-        <div class="badge" id="streak">Streak: 0 🔥</div>
-        <div class="badge" id="crowns">Crowns: 0 👑</div>
-      </div>
-    </header><!-- MAIN SCREEN -->
-<div id="main">
-  <div class="hero">
-    <div class="hero-left">
-      <h2>Pick a Tier — A1 → C2</h2>
-      <p class="meta-text">100 stages per tier. Each stage: 10 words. Match German ↔ English.</p>
-      <div style="margin-top:12px">
-        <button class="start-btn" onclick="enterLevelSelect()">Start learning</button>
-        <button class="ghost" onclick="exportProgress()">Export</button>
-        <input type="file" id="importFile" style="display:none" onchange="importProgress(event)" />
-        <button class="ghost" onclick="document.getElementById('importFile').click()">Import</button>
-      </div>
-    </div>
-    <div class="hero-right panel">
-      <div style="font-weight:700">Overview</div>
-      <div style="margin-top:8px;font-size:13px;color:var(--muted)">Levels completed turn green. Current level is orange. Locked are dark.</div>
-    </div>
-  </div>
 
-  <div class="map" aria-hidden="false">
-    <div class="path" id="mapPath"></div>
-  </div>
+<!-- MAP SCREEN -->
+<div id="map" class="screen active">
+    <h1>A1 German Training Map</h1>
+    <svg id="mapPath" width="100%" height="80%"></svg>
 </div>
 
 <!-- LEVEL SELECT -->
-<div id="level-page">
-  <div class="level-header">
-    <div style="font-weight:700">Level Selection</div>
-    <div>
-      <select id="tierSelect" onchange="tierChanged(this.value)"></select>
-      <button class="ghost" onclick="backToMain()">Back</button>
-    </div>
-  </div>
-
-  <div class="level-grid panel">
+<div id="level-page" class="screen">
+    <h1>Select A Level</h1>
+    <button onclick="showScreen('map')">Back</button>
     <div id="level-select"></div>
-  </div>
 </div>
 
-<!-- GAME -->
-<div id="game-page">
-  <div class="game-top">
-    <div style="font-weight:700">Game — <span id="game-tier"></span> • Level <span id="game-level"></span></div>
-    <div>
-      <button class="ghost" onclick="giveUp()">Give up</button>
-      <button class="ghost" onclick="backToLevelSelect()">Level select</button>
-    </div>
-  </div>
+<!-- GAME SCREEN -->
+<div id="game" class="screen">
+    <h1>Tier: <span id="game-tier"></span> | Level: <span id="game-level"></span></h1>
+    <p>Attempts: <span id="attempts">0</span></p>
+    <button onclick="showScreen('level-page')">Back</button>
 
-  <div id="canvas-wrap" style="margin-top:12px;min-height:320px">
-    <svg id="lines"></svg>
-    <div class="grid-wrap">
-      <div class="col panel">
-        <div style="font-weight:700">German</div>
-        <div class="word-grid" id="leftCol"></div>
-      </div>
-      <div class="col panel">
-        <div style="font-weight:700">English</div>
-        <div class="word-grid" id="rightCol"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="controls">
-    <button class="ghost" onclick="retryLevel()">Retry</button>
-    <button class="ghost" onclick="toggleSound()">Toggle sound</button>
-    <div style="margin-left:auto;opacity:.9">Attempts: <span id="attempts">0</span></div>
-  </div>
+    <div id="leftCol"></div>
+    <div id="rightCol"></div>
+    <svg id="lineArea"></svg>
 </div>
 
-  </div>  <script>
-    /***** DATA MODEL *****/
-    // Tiers A1..C2
-    const TIERS = ['A1','A2','B1','B2','C1','C2'];
-    // levelsPerTier -> 100 each
-    const LEVELS_PER_TIER = 100;
+<script>
+/* ================================
+   REAL A1 LEVELS (20 LEVELS)
+================================ */
 
-    // For demo: small sample for Level 1 only. Real usage: import a JSON file with all levels.
-    const stage = (LEVELS[tier] && LEVELS[tier][level] && LEVELS[tier][level].de.length>0) 
-    ? LEVELS[tier][level] 
-    : SAMPLE_STAGE[tier][1];
-  "A1": {
-    "1": { de:["ich","sein","haben","nicht","und","er","sie","wir","ihr","sie (they)"], en:["I","to be","to have","not","and","he","she","we","you (pl)","they"] },
-    "2": { de:["ein","eine","der","die","das","in","zu","mit","auf","für"], en:["a / an (m)","a / an (f)","the (m)","the (f)","the (n)","in","to","with","on","for"] },
-    "3": { de:["nicht","ja","nein","aber","oder","weil","wenn","wo","dort","hier"], en:["not","yes","no","but","or","because","if","where","there","here"] },
-    "4": { de:["sprechen","verstehen","kennen","gehen","kommen","machen","sehen","geben","nehmen","essen"], en:["to speak","to understand","to know","to go","to come","to do/make","to see","to give","to take","to eat"] },
-    "5": { de:["Wasser","Brot","Stadt","Haus","Auto","Tag","Nacht","Mensch","Freund","Frau"], en:["water","bread","city","house","car","day","night","person","friend","woman"] },
-    "6": { de:["Mann","Kind","Schule","Lehrer","Stuhl","Tisch","Buch","Fenster","Tür","Straße"], en:["man","child","school","teacher","chair","table","book","window","door","street"] },
-    "7": { de:["laufen","rennen","springen","schwimmen","sitzen","stehen","liegen","lesen","schreiben","hören"], en:["to walk","to run","to jump","to swim","to sit","to stand","to lie","to read","to write","to listen"] },
-    "8": { de:["gut","schlecht","heiß","kalt","groß","klein","alt","jung","neu","alt (old)"], en:["good","bad","hot","cold","big","small","old","young","new","old"] },
-    "9": { de:["rot","blau","grün","gelb","weiß","schwarz","braun","orange","rosa","lila"], en:["red","blue","green","yellow","white","black","brown","orange","pink","purple"] },
-    "10": { de:["früh","spät","heute","morgen","gestern","immer","nie","oft","manchmal","selten"], en:["early","late","today","tomorrow","yesterday","always","never","often","sometimes","rarely"] },
-    "11": { de:["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag","Januar","Februar","März"], en:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","January","February","March"] },
-    "12": { de:["April","Mai","Juni","Juli","August","September","Oktober","November","Dezember","Jahr"], en:["April","May","June","July","August","September","October","November","December","year"] },
-    "13": { de:["heute","gestern","morgen","jetzt","später","früh","spät","immer","oft","selten"], en:["today","yesterday","tomorrow","now","later","early","late","always","often","rarely"] },
-    "14": { de:["Haus","Zimmer","Küche","Bad","Schlafzimmer","Wohnzimmer","Tür","Fenster","Garten","Balkon"], en:["house","room","kitchen","bathroom","bedroom","living room","door","window","garden","balcony"] },
-    "15": { de:["essen","trinken","schlafen","laufen","spielen","lernen","arbeiten","fahren","fliegen","kochen"], en:["to eat","to drink","to sleep","to walk","to play","to learn","to work","to drive","to fly","to cook"] },
-    "16": { de:["Familie","Eltern","Bruder","Schwester","Onkel","Tante","Cousin","Großvater","Großmutter","Kind"], en:["family","parents","brother","sister","uncle","aunt","cousin","grandfather","grandmother","child"] },
-    "17": { de:["rot","blau","grün","gelb","weiß","schwarz","braun","orange","rosa","lila"], en:["red","blue","green","yellow","white","black","brown","orange","pink","purple"] },
-    "18": { de:["heiß","kalt","warm","kühl","trocken","nass","schnell","langsam","leicht","schwer"], en:["hot","cold","warm","cool","dry","wet","fast","slow","easy","heavy"] },
-    "19": { de:["glücklich","traurig","müde","aufgeregt","wütend","ängstlich","hungrig","durstig","krank","gesund"], en:["happy","sad","tired","excited","angry","afraid","hungry","thirsty","sick","healthy"] },
-    "20": { de:["sehen","hören","fühlen","riechen","schmecken","denken","wissen","glauben","erinnern","vergessen"], en:["to see","to hear","to feel","to smell","to taste","to think","to know","to believe","to remember","to forget"] }
-  }
+const LEVELS = {
+    "A1": {
+        1: { de:["ich","du","er","sie","es","wir","ihr","sein","haben","nicht"],
+             en:["I","you","he","she","it","we","you (pl)","to be","to have","not"] },
+
+        2: { de:["Hallo","Tschüss","Danke","Bitte","Ja","Nein","Vielleicht","Wer","Was","Wo"],
+             en:["Hello","Bye","Thanks","Please","Yes","No","Maybe","Who","What","Where"] },
+
+        3: { de:["Haus","Auto","Straße","Zimmer","Tür","Fenster","Stuhl","Tisch","Bett","Lampe"],
+             en:["house","car","street","room","door","window","chair","table","bed","lamp"] },
+
+        4: { de:["essen","trinken","gehen","kommen","sehen","machen","geben","nehmen","sprechen","verstehen"],
+             en:["eat","drink","go","come","see","do/make","give","take","speak","understand"] },
+
+        5: { de:["heute","morgen","gestern","später","jetzt","immer","manchmal","selten","nie","bald"],
+             en:["today","tomorrow","yesterday","later","now","always","sometimes","rarely","never","soon"] },
+
+        6: { de:["Hund","Katze","Vogel","Fisch","Kuh","Pferd","Schwein","Huhn","Schaf","Bär"],
+             en:["dog","cat","bird","fish","cow","horse","pig","chicken","sheep","bear"] },
+
+        7: { de:["rot","blau","grün","gelb","schwarz","weiß","grau","braun","orange","rosa"],
+             en:["red","blue","green","yellow","black","white","gray","brown","orange","pink"] },
+
+        8: { de:["eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn"],
+             en:["one","two","three","four","five","six","seven","eight","nine","ten"] },
+
+        9: { de:["Mutter","Vater","Bruder","Schwester","Familie","Kind","Onkel","Tante","Freund","Oma"],
+             en:["mother","father","brother","sister","family","child","uncle","aunt","friend","grandma"] },
+
+        10:{ de:["Frühstück","Mittagessen","Abendessen","Apfel","Brot","Wasser","Kaffee","Tee","Milch","Saft"],
+             en:["breakfast","lunch","dinner","apple","bread","water","coffee","tea","milk","juice"] },
+
+        11:{ de:["lernen","schreiben","lesen","fragen","antworten","schlafen","arbeiten","spielen","laufen","fahren"],
+             en:["learn","write","read","ask","answer","sleep","work","play","run","drive"] },
+
+        12:{ de:["Körper","Kopf","Hand","Bein","Fuß","Auge","Ohr","Mund","Nase","Haar"],
+             en:["body","head","hand","leg","foot","eye","ear","mouth","nose","hair"] },
+
+        13:{ de:["warm","kalt","heiß","cool","neu","alt","billig","teuer","leicht","schwer"],
+             en:["warm","cold","hot","cool","new","old","cheap","expensive","easy","hard"] },
+
+        14:{ de:["Stadt","Dorf","Park","Laden","Schule","Krankenhaus","Bank","Hotel","Bahnhof","Flughafen"],
+             en:["city","village","park","store","school","hospital","bank","hotel","train station","airport"] },
+
+        15:{ de:["Frage","Antwort","Wort","Satz","Buch","Papier","Stift","Heft","Lehrer","Schüler"],
+             en:["question","answer","word","sentence","book","paper","pen","notebook","teacher","student"] },
+
+        16:{ de:["früh","spät","hoch","niedrig","langsam","schnell","nah","weit","sauber","schmutzig"],
+             en:["early","late","high","low","slow","fast","near","far","clean","dirty"] },
+
+        17:{ de:["Morgen","Abend","Nacht","Frühling","Sommer","Herbst","Winter","Woche","Monat","Jahr"],
+             en:["morning","evening","night","spring","summer","autumn","winter","week","month","year"] },
+
+        18:{ de:["Kochen","Backen","Reisen","Lesen","Spielen","Schwimmen","Singen","Zeichnen","Bauen","Fahren"],
+             en:["cooking","baking","traveling","reading","playing","swimming","singing","drawing","building","driving"] },
+
+        19:{ de:["Arbeit","Geld","Zeit","Plan","Ziel","Problem","Lösung","Weg","Ort","Nummer"],
+             en:["work","money","time","plan","goal","problem","solution","way","place","number"] },
+
+        20:{ de:["kaufen","verkaufen","öffnen","schließen","tragen","ziehen","drücken","fallen","stehen","sitzen"],
+             en:["buy","sell","open","close","carry","pull","push","fall","stand","sit"] },
+    }
 };
 
-    // Store levels as { tier: { levelIndex: {de:[],en:[]}}}
-    let LEVELS = {};
-    TIERS.forEach(t=>{ LEVELS[t] = {}; for(let i=1;i<=LEVELS_PER_TIER;i++){ LEVELS[t][i] = (i===1 && t==='A1') ? SAMPLE_STAGE : {de:[],en:[]} } });
+/* ================================
+       GAME STATE
+================================ */
 
-    // progress stored in localStorage
-    const STORAGE_KEY = 'gm_progress_v2';
-    const PROFILE_KEY = 'gm_profile_v2';
+const STATE = { completed:[], unlocked:[1] };
 
-    let state = {
-      xp:0, streak:0, crowns:0, sound:true,
-      // unlocked levels: per tier array 'locked','unlocked','completed'
-      levelStatus: {},
-      current:{tier:'A1',level:1}
-    };
+/* ================================
+       MAP FUNCTIONS
+================================ */
 
-    function initState(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw){ try{ state = JSON.parse(raw); }catch(e){} }
-      // ensure levelStatus structure
-      TIERS.forEach(t=>{
-        if(!state.levelStatus[t]){ state.levelStatus[t] = Array(LEVELS_PER_TIER).fill('locked'); state.levelStatus[t][0] = 'unlocked'; }
-      });
-      save();
+document.addEventListener("DOMContentLoaded",()=>{
+    renderMap();
+});
+
+function renderMap(){
+    const svg=document.getElementById("mapPath");
+    svg.innerHTML="";
+
+    for(let i=1;i<=20;i++){
+        let cx = 100 + (i-1)*60;
+        let cy = 150;
+
+        const node = document.createElementNS("http://www.w3.org/2000/svg","circle");
+        node.setAttribute("cx",cx);
+        node.setAttribute("cy",cy);
+        node.setAttribute("r",20);
+
+        if(STATE.completed.includes(i)) node.classList.add("completed");
+        else if(STATE.unlocked.includes(i)) node.classList.add("unlocked");
+        else node.classList.add("locked");
+
+        node.onclick = ()=> openLevelPage(i);
+        svg.appendChild(node);
+    }
+}
+
+function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+function openLevelPage(level){
+    const list=document.getElementById("level-select");
+    list.innerHTML="";
+
+    for(let i=1;i<=20;i++){
+        const btn=document.createElement("button");
+        btn.textContent=`Level ${i}`;
+        btn.classList.add("level-button");
+
+        if(STATE.completed.includes(i)) btn.classList.add("completed");
+        else if(STATE.unlocked.includes(i)) btn.classList.add("unlocked");
+        else btn.classList.add("locked");
+
+        btn.onclick = ()=>{
+            if(!STATE.unlocked.includes(i)) return;
+            startLevel(i);
+        };
+
+        list.appendChild(btn);
     }
 
-    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateUI(); }
+    showScreen("level-page");
+}
 
-    function exportProgress(){ const blob = new Blob([JSON.stringify(state)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;a.download='gm_progress.json';a.click();URL.revokeObjectURL(url); }
-    function importProgress(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ state=JSON.parse(r.result); save(); alert('Imported'); }catch(e){alert('Bad file')} }; r.readAsText(f); }
+/* ================================
+          GAME LOGIC
+================================ */
 
-    /***** UI INIT *****/
-    const mapPath = document.getElementById('mapPath');
-    const tierSelect = document.getElementById('tierSelect');
-    const levelSelect = document.getElementById('level-select');
+let current = null;
 
-    function buildMap(){ mapPath.innerHTML='';
-      TIERS.forEach((t,ti)=>{
-        const group = document.createElement('div'); group.style.display='flex'; group.style.alignItems='center'; group.style.gap='10px';
-        for(let i=0;i<10;i++){ // show 10 nodes per tier on map preview (for performance)
-          const idx = ti*10 + i + 1;
-          const node = document.createElement('div'); node.className='node '+getStatusClass(t, idx);
-          node.innerText = (idx<=LEVELS_PER_TIER)? idx : '';
-          node.onclick = ()=>{ if(getStatus(t, idx)!=='locked'){ openLevel(t, Math.min(idx,LEVELS_PER_TIER)) } };
-          group.appendChild(node);
+function startLevel(level){
+    current=level;
+    showScreen("game");
+    loadLevel(level);
+}
+
+function loadLevel(level){
+    document.getElementById("game-tier").textContent="A1";
+    document.getElementById("game-level").textContent=level;
+
+    const stage=LEVELS.A1[level];
+
+    const left=document.getElementById("leftCol");
+    const right=document.getElementById("rightCol");
+    const lines=document.getElementById("lineArea");
+
+    left.innerHTML="";
+    right.innerHTML="";
+    lines.innerHTML="";
+    document.getElementById("attempts").textContent="0";
+
+    let attempts=0;
+    let matched=0;
+
+    let de=[...stage.de];
+    let en=[...stage.en];
+
+    shuffle(de);
+    shuffle(en);
+
+    let selected=null;
+
+    de.forEach(w=>{
+        const b=document.createElement("button");
+        b.classList.add("word-button");
+        b.textContent=w;
+        b.onclick=()=>selected=b;
+        left.appendChild(b);
+    });
+
+    en.forEach(w=>{
+        const b=document.createElement("button");
+        b.classList.add("word-button");
+        b.textContent=w;
+
+        b.onclick=()=>{
+            if(!selected) return;
+            attempts++;
+            document.getElementById("attempts").textContent=attempts;
+
+            const leftW=selected.textContent;
+            const rightW=b.textContent;
+
+            const idx = stage.de.indexOf(leftW);
+
+            if(stage.en[idx]===rightW){
+                selected.style.background="#31d737";
+                b.style.background="#31d737";
+                drawLine(selected,b);
+                matched++;
+
+                if(matched===10){
+
+                    if(!STATE.completed.includes(level))
+                        STATE.completed.push(level);
+
+                    if(level<20 && !STATE.unlocked.includes(level+1))
+                        STATE.unlocked.push(level+1);
+
+                    renderMap();
+
+                    setTimeout(()=>{
+                        alert("Level Completed!");
+                        showScreen("level-page");
+                    },400);
+                }
+
+            } else {
+                selected.style.background="#ff4c4c";
+                b.style.background="#ff4c4c";
+                setTimeout(()=>{
+                    selected.style.background="#f0f0f0";
+                    b.style.background="#f0f0f0";
+                },300);
+            }
+
+            selected=null;
+        };
+
+        right.appendChild(b);
+    });
+
+
+    function drawLine(a,b){
+        const svg=lines;
+
+        function pos(el){
+            let r=el.getBoundingClientRect();
+            let p=svg.getBoundingClientRect();
+            return {x:r.left-p.left+r.width/2,y:r.top-p.top+r.height/2};
         }
-        const label = document.createElement('div'); label.style.color='var(--muted)'; label.style.marginLeft='10px'; label.innerText=t;
-        mapPath.appendChild(group); mapPath.appendChild(label);
-      });
+
+        let A=pos(a), B=pos(b);
+
+        let line=document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("x1",A.x);
+        line.setAttribute("y1",A.y);
+        line.setAttribute("x2",B.x);
+        line.setAttribute("y2",B.y);
+        line.setAttribute("stroke","lime");
+        line.setAttribute("stroke-width","4");
+        svg.appendChild(line);
     }
+}
 
-    function getStatus(tier, level){ return state.levelStatus[tier][level-1]; }
-    function getStatusClass(tier, level){ const s = getStatus(tier, level); if(!s) return 'locked'; return s; }
-
-    function updateUI(){ document.getElementById('xp').innerText = 'XP: ' + state.xp; document.getElementById('streak').innerText = 'Streak: ' + state.streak + ' 🔥'; document.getElementById('crowns').innerText = 'Crowns: ' + state.crowns + ' 👑'; buildMap(); generateLevelButtons(); }
-
-    function populateTierSelect(){ tierSelect.innerHTML=''; TIERS.forEach(t=>{ const opt=document.createElement('option'); opt.value=t; opt.innerText=t; tierSelect.appendChild(opt); }); }
-
-    function tierChanged(t){ generateLevelButtons(t); }
-
-    function generateLevelButtons(selectedTier){ levelSelect.innerHTML=''; const tier = selectedTier || TIERS[0]; for(let i=1;i<=LEVELS_PER_TIER;i++){ const btn = document.createElement('button'); btn.className='level-btn '+getStatusClass(tier,i); btn.innerText='Level '+i; btn.onclick = ()=>{ if(getStatus(tier,i)!=='locked') loadLevel(tier,i); }; levelSelect.appendChild(btn); } }
-
-    function openLevel(tier, level){ state.current.tier = tier; state.current.level = level; save(); enterGame(); loadLevel(tier, level); }
-
-    function loadLevel(tier, level){ // load words and render
-      document.getElementById('game-tier').innerText = tier; document.getElementById('game-level').innerText = level;
-      const left = document.getElementById('leftCol'); const right = document.getElementById('rightCol'); left.innerHTML=''; right.innerHTML=''; document.getElementById('lines').innerHTML='';
-      // if LEVELS has no data for this level, fill with placeholders
-      const stage = (LEVELS[tier] && LEVELS[tier][level] && LEVELS[tier][level].de.length>0) ? LEVELS[tier][level] : SAMPLE_STAGE;
-      const items = stage.de.map((g,i)=>({g, e:stage.en[i], pair:i}));
-      // create shuffled left/right sets
-      const leftItems = shuffle(items.map(it=>({...it})));
-      const rightItems = shuffle(items.map(it=>({...it})));
-      leftItems.forEach((it,idx)=>{ const b=document.createElement('div'); b.className='word-btn'; b.innerText=it.g; b.dataset.pair = it.pair; b.dataset.side='g'; b.dataset.idx=idx; b.onclick=()=>selectBtn(b); left.appendChild(b); });
-      rightItems.forEach((it,idx)=>{ const b=document.createElement('div'); b.className='word-btn'; b.innerText=it.e; b.dataset.pair = it.pair; b.dataset.side='e'; b.dataset.idx=idx; b.onclick=()=>selectBtn(b); right.appendChild(b); });
-      // show game page
-      document.getElementById('attempts').innerText = 0; attempts=0; correctPairs=0; selectedBtn=null; sessionPairs = items.length;
+function shuffle(a){
+    for(let i=a.length-1;i>0;i--){
+        let j=Math.floor(Math.random()*(i+1));
+        [a[i],a[j]]=[a[j],a[i]];
     }
+}
+</script>
 
-    /***** NAVIGATION ANIMATIONS *****/
-    function enterLevelSelect(){ document.getElementById('main').style.display='none'; document.getElementById('level-page').style.display='block'; setTimeout(()=>{ document.getElementById('level-page').style.opacity=1; },10); }
-    function backToMain(){ document.getElementById('level-page').style.opacity=0; setTimeout(()=>{ document.getElementById('level-page').style.display='none'; document.getElementById('main').style.display='block'; },200); }
-    function enterGame(){ document.getElementById('level-page').style.opacity=0; setTimeout(()=>{ document.getElementById('level-page').style.display='none'; document.getElementById('game-page').style.display='block'; setTimeout(()=>{ document.getElementById('game-page').style.opacity=1; },10); },200); }
-    function backToLevelSelect(){ document.getElementById('game-page').style.opacity=0; setTimeout(()=>{ document.getElementById('game-page').style.display='none'; document.getElementById('level-page').style.display='block'; setTimeout(()=>{ document.getElementById('level-page').style.opacity=1; },10); },200); }
-
-    /***** GAME LOGIC *****/
-    let selectedBtn = null; let attempts=0; let correctPairs=0; let sessionPairs=0; let sessionLines=[];
-    function selectBtn(btn){ if(btn.classList.contains('correct')) return;
-      if(!selectedBtn){ // pick first
-        selectedBtn = btn; btn.classList.add('selected');
-      } else {
-        // second pick
-        attempts++; document.getElementById('attempts').innerText = attempts;
-        const pairA = selectedBtn.dataset.pair; const pairB = btn.dataset.pair; const sideA = selectedBtn.dataset.side; const sideB = btn.dataset.side;
-        // must be opposite sides
-        if(sideA === sideB){ // invalid
-          // flash wrong both
-          flashWrong(selectedBtn); flashWrong(btn); selectedBtn.classList.remove('selected'); selectedBtn=null; return; }
-        if(pairA === pairB){ // correct
-          markCorrect(selectedBtn, btn);
-        } else { // wrong
-          flashWrong(selectedBtn); flashWrong(btn);
-        }
-        selectedBtn.classList.remove('selected'); selectedBtn=null;
-      }
-    }
-
-    function markCorrect(a,b){ a.classList.add('correct'); b.classList.add('correct'); playSound('correct'); drawConnection(a,b,'#00c853'); correctPairs++; // award xp
-      state.xp += 10; save(); if(correctPairs>=sessionPairs){ levelCompleted(); } }
-
-    function flashWrong(a){ a.classList.add('wrong'); playSound('wrong'); setTimeout(()=>{ a.classList.remove('wrong'); },500); state.xp += 1; save(); }
-
-    function levelCompleted(){ // mark level complete and give rewards
-      const t = state.current.tier, l = state.current.level; state.levelStatus[t][l-1] = 'completed'; // unlock next
-      if(l < LEVELS_PER_TIER) state.levelStatus[t][l] = 'unlocked'; else { // unlock first of next tier
-        const ti = TIERS.indexOf(t); if(ti+1<TIERS.length) state.levelStatus[TIERS[ti+1]][0] = 'unlocked'; }
-      state.streak +=1; state.crowns +=1; state.xp += 50; save(); playSound('levelup'); // animate UI
-      // color the node green on map
-      setTimeout(()=>{ generateLevelButtons(state.current.tier); buildMap(); alert('Level complete!'); backToLevelSelect(); },300);
-    }
-
-    function giveUp(){ if(confirm('Give up on this level?')){ backToLevelSelect(); } }
-
-    function retryLevel(){ loadLevel(state.current.tier, state.current.level); }
-
-    function toggleSound(){ state.sound = !state.sound; save(); }
-
-    function playSound(kind){ if(!state.sound) return; try{ if(kind==='correct'){ const o=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='); o.play(); } else if(kind==='wrong'){ const o=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='); o.play(); } else if(kind==='levelup'){ const o=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='); o.play(); } }catch(e){}
-    }
-
-    /***** DRAW CONNECTION LINE *****/
-    function drawConnection(a,b,color){ const svg = document.getElementById('lines'); const rA = a.getBoundingClientRect(); const rB = b.getBoundingClientRect(); const container = document.getElementById('canvas-wrap').getBoundingClientRect(); const x1 = rA.left + rA.width/2 - container.left; const y1 = rA.top + rA.height/2 - container.top; const x2 = rB.left + rB.width/2 - container.left; const y2 = rB.top + rB.height/2 - container.top; const line = document.createElementNS('http://www.w3.org/2000/svg','line'); line.setAttribute('x1',x1); line.setAttribute('y1',y1); line.setAttribute('x2',x2); line.setAttribute('y2',y2); line.setAttribute('stroke',color); line.setAttribute('stroke-width',4); line.setAttribute('stroke-linecap','round'); svg.appendChild(line); sessionLines.push(line); }
-
-    // small helper to create connection using animate
-    function createConnectionLine(btn1, btn2, color){ drawConnection(btn1, btn2, color); }
-
-    // util: shuffle
-    function shuffle(a){ const arr = a.slice(); for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
-
-    /***** BOOT *****/
-    initState(); populateTierSelect(); generateLevelButtons(); buildMap(); updateUI();
-
-    // expose import handler
-    window.importProgress = importProgress; window.enterLevelSelect = enterLevelSelect; window.backToMain = backToMain; window.backToLevelSelect = backToLevelSelect; window.retryLevel = retryLevel; window.toggleSound = toggleSound; window.exportProgress = exportProgress;
-  </script></body>
+</body>
 </html>
