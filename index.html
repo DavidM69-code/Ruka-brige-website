@@ -1,365 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>German Match Trainer</title>
+<meta charset="UTF-8" />
+<title>German Matching Game</title>
 <style>
-body {
-    background:#222;
-    margin:0;
-    font-family:Arial, sans-serif;
-    color:white;
-    overflow:hidden;
-}
-
-.screen {
-    display:none;
-    width:100vw;
-    height:100vh;
-    padding:20px;
-    box-sizing:border-box;
-}
-
-.screen.active { display:block; }
-
-button {
-    padding:10px;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-    cursor:pointer;
-    margin:4px;
-    transition:0.2s;
-    color:black !important;  /* BLACK TEXT */
-}
-
-/* Level buttons */
-.level-button.locked { background:#444; color:#000; }
-.level-button.unlocked { background:#ffa600; color:#000; }
-.level-button.completed { background:#39e64f; color:#000; }
-
-/* Word buttons */
-.word-button {
-    width:45%;
-    background:#f0f0f0;
-    color:black !important;
-    border-radius:10px;
-}
-
-/* Map nodes */
-#mapPath circle.locked { fill:#444; }
-#mapPath circle.unlocked { fill:#ff9800; }
-#mapPath circle.completed { fill:#4caf50; }
-
-#leftCol, #rightCol {
-    position:absolute;
-    top:120px;
-    width:45%;
-    height:70%;
-    overflow:auto;
-}
-
-#leftCol { left:5%; }
-#rightCol { right:5%; }
-
-#lineArea {
-    position:absolute;
-    top:120px;
-    left:0;
-    width:100%;
-    height:70%;
-    pointer-events:none;
-}
+  body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; padding:0; }
+  .page { display:none; padding:20px; }
+  #mainPage { display:block; }
+  button { padding:10px 20px; margin:5px; font-size:18px; color:black; background:white; border:2px solid #ccc; border-radius:10px; cursor:pointer; transition:0.3s; }
+  .level-btn { width:120px; }
+  .correct { background:#4caf50 !important; color:black; }
+  .wrong { background:#ff4d4d !important; color:black; }
+  .selected { background:#d9d9d9 !important; color:black; }
+  #words { display:flex; justify-content:space-between; margin-top:20px; }
+  #leftCol, #rightCol { width:45%; display:flex; flex-direction:column; gap:10px; }
+  svg line { stroke-width:4; stroke-linecap:round; }
 </style>
 </head>
-<body>
-
-<!-- MAP SCREEN -->
-<div id="map" class="screen active">
-    <h1>A1 German Training Map</h1>
-    <svg id="mapPath" width="100%" height="80%"></svg>
-</div>
-
-<!-- LEVEL SELECT -->
-<div id="level-page" class="screen">
-    <h1>Select A Level</h1>
-    <button onclick="showScreen('map')">Back</button>
-    <div id="level-select"></div>
-</div>
-
-<!-- GAME SCREEN -->
-<div id="game" class="screen">
-    <h1>Tier: <span id="game-tier"></span> | Level: <span id="game-level"></span></h1>
-    <p>Attempts: <span id="attempts">0</span></p>
-    <button onclick="showScreen('level-page')">Back</button>
-
+<body><div id="mainPage" class="page">
+  <h1>Select Level</h1>
+  <div id="level-select"></div>
+</div><div id="gamePage" class="page">
+  <button id="backBtn">Back</button>
+  <h2 id="gameHeader"></h2>
+  <svg id="lines" width="100%" height="400px" style="position:absolute; top:150px; left:0; pointer-events:none;"></svg>
+  <div id="words">
     <div id="leftCol"></div>
     <div id="rightCol"></div>
-    <svg id="lineArea"></svg>
-</div>
-
-<script>
-/* ================================
-   REAL A1 LEVELS (20 LEVELS)
-================================ */
-
+  </div>
+  <h3 id="attempts"></h3>
+  <button id="retryBtn">Retry</button>
+</div><script>
 const LEVELS = {
-    "A1": {
-        1: { de:["ich","du","er","sie","es","wir","ihr","sein","haben","nicht"],
-             en:["I","you","he","she","it","we","you (pl)","to be","to have","not"] },
-
-        2: { de:["Hallo","Tschüss","Danke","Bitte","Ja","Nein","Vielleicht","Wer","Was","Wo"],
-             en:["Hello","Bye","Thanks","Please","Yes","No","Maybe","Who","What","Where"] },
-
-        3: { de:["Haus","Auto","Straße","Zimmer","Tür","Fenster","Stuhl","Tisch","Bett","Lampe"],
-             en:["house","car","street","room","door","window","chair","table","bed","lamp"] },
-
-        4: { de:["essen","trinken","gehen","kommen","sehen","machen","geben","nehmen","sprechen","verstehen"],
-             en:["eat","drink","go","come","see","do/make","give","take","speak","understand"] },
-
-        5: { de:["heute","morgen","gestern","später","jetzt","immer","manchmal","selten","nie","bald"],
-             en:["today","tomorrow","yesterday","later","now","always","sometimes","rarely","never","soon"] },
-
-        6: { de:["Hund","Katze","Vogel","Fisch","Kuh","Pferd","Schwein","Huhn","Schaf","Bär"],
-             en:["dog","cat","bird","fish","cow","horse","pig","chicken","sheep","bear"] },
-
-        7: { de:["rot","blau","grün","gelb","schwarz","weiß","grau","braun","orange","rosa"],
-             en:["red","blue","green","yellow","black","white","gray","brown","orange","pink"] },
-
-        8: { de:["eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn"],
-             en:["one","two","three","four","five","six","seven","eight","nine","ten"] },
-
-        9: { de:["Mutter","Vater","Bruder","Schwester","Familie","Kind","Onkel","Tante","Freund","Oma"],
-             en:["mother","father","brother","sister","family","child","uncle","aunt","friend","grandma"] },
-
-        10:{ de:["Frühstück","Mittagessen","Abendessen","Apfel","Brot","Wasser","Kaffee","Tee","Milch","Saft"],
-             en:["breakfast","lunch","dinner","apple","bread","water","coffee","tea","milk","juice"] },
-
-        11:{ de:["lernen","schreiben","lesen","fragen","antworten","schlafen","arbeiten","spielen","laufen","fahren"],
-             en:["learn","write","read","ask","answer","sleep","work","play","run","drive"] },
-
-        12:{ de:["Körper","Kopf","Hand","Bein","Fuß","Auge","Ohr","Mund","Nase","Haar"],
-             en:["body","head","hand","leg","foot","eye","ear","mouth","nose","hair"] },
-
-        13:{ de:["warm","kalt","heiß","cool","neu","alt","billig","teuer","leicht","schwer"],
-             en:["warm","cold","hot","cool","new","old","cheap","expensive","easy","hard"] },
-
-        14:{ de:["Stadt","Dorf","Park","Laden","Schule","Krankenhaus","Bank","Hotel","Bahnhof","Flughafen"],
-             en:["city","village","park","store","school","hospital","bank","hotel","train station","airport"] },
-
-        15:{ de:["Frage","Antwort","Wort","Satz","Buch","Papier","Stift","Heft","Lehrer","Schüler"],
-             en:["question","answer","word","sentence","book","paper","pen","notebook","teacher","student"] },
-
-        16:{ de:["früh","spät","hoch","niedrig","langsam","schnell","nah","weit","sauber","schmutzig"],
-             en:["early","late","high","low","slow","fast","near","far","clean","dirty"] },
-
-        17:{ de:["Morgen","Abend","Nacht","Frühling","Sommer","Herbst","Winter","Woche","Monat","Jahr"],
-             en:["morning","evening","night","spring","summer","autumn","winter","week","month","year"] },
-
-        18:{ de:["Kochen","Backen","Reisen","Lesen","Spielen","Schwimmen","Singen","Zeichnen","Bauen","Fahren"],
-             en:["cooking","baking","traveling","reading","playing","swimming","singing","drawing","building","driving"] },
-
-        19:{ de:["Arbeit","Geld","Zeit","Plan","Ziel","Problem","Lösung","Weg","Ort","Nummer"],
-             en:["work","money","time","plan","goal","problem","solution","way","place","number"] },
-
-        20:{ de:["kaufen","verkaufen","öffnen","schließen","tragen","ziehen","drücken","fallen","stehen","sitzen"],
-             en:["buy","sell","open","close","carry","pull","push","fall","stand","sit"] },
-    }
+  1:{de:["ich","du","er","sie","wir","ihr","sie (they)","sein","haben","gehen"],en:["I","you","he","she","we","you (pl)","they","to be","to have","to go"]},
+  2:{de:["kommen","machen","sehen","sprechen","essen","trinken","lernen","schreiben","lesen","wohnen"],en:["to come","to do","to see","to speak","to eat","to drink","to learn","to write","to read","to live"]},
+  3:{de:["Haus","Auto","Buch","Tisch","Stuhl","Fenster","Tür","Straße","Schule","Stadt"],en:["house","car","book","table","chair","window","door","street","school","city"]},
+  4:{de:["Hund","Katze","Vogel","Fisch","Brot","Wasser","Milch","Apfel","Banane","Ei"],en:["dog","cat","bird","fish","bread","water","milk","apple","banana","egg"]},
+  5:{de:["Mann","Frau","Kind","Freund","Lehrer","Arzt","Name","Tag","Woche","Jahr"],en:["man","woman","child","friend","teacher","doctor","name","day","week","year"]},
+  6:{de:["heute","morgen","gestern","immer","nie","oft","jetzt","bald","langsam","schnell"],en:["today","tomorrow","yesterday","always","never","often","now","soon","slow","fast"]},
+  7:{de:["rot","blau","gelb","grün","schwarz","weiß","klein","groß","alt","neu"],en:["red","blue","yellow","green","black","white","small","big","old","new"]},
+  8:{de:["kalt","warm","heiß","schön","schlecht","richtig","falsch","billig","teuer","leicht"],en:["cold","warm","hot","beautiful","bad","correct","wrong","cheap","expensive","easy"]},
+  9:{de:["schwer","ruhig","laut","früh","spät","links","rechts","oben","unten","mitte"],en:["hard","calm","loud","early","late","left","right","up","down","middle"]},
+  10:{de:["arbeiten","spielen","stehen","sitzen","laufen","fahren","springen","schlafen","öffnen","schließen"],en:["to work","to play","to stand","to sit","to run","to drive","to jump","to sleep","to open","to close"]},
+  11:{de:["schreiben","lesen","kochen","kaufen","verkaufen","bezahlen","suchen","finden","nehmen","geben"],en:["to write","to read","to cook","to buy","to sell","to pay","to search","to find","to take","to give"]},
+  12:{de:["Frühstück","Mittagessen","Abendessen","Zimmer","Bad","Küche","Garten","Park","Brücke","Fluss"],en:["breakfast","lunch","dinner","room","bathroom","kitchen","garden","park","bridge","river"]},
+  13:{de:["Berg","Meer","Wald","Insel","Wüste","Himmel","Erde","Feuer","Wasser","Luft"],en:["mountain","sea","forest","island","desert","sky","earth","fire","water","air"]},
+  14:{de:["Frage","Antwort","Wort","Satz","Bild","Zeit","Hand","Kopf","Herz","Welt"],en:["question","answer","word","sentence","picture","time","hand","head","heart","world"]},
+  15:{de:["Arbeit","Schule","Universität","Krankenhaus","Supermarkt","Cafe","Restaurant","Hotel","Bahnhof","Flughafen"],en:["work","school","university","hospital","supermarket","cafe","restaurant","hotel","train station","airport"]},
+  16:{de:["Regen","Schnee","Wind","Sturm","Wolke","Sonne","Mond","Stern","Nebel","Hitze"],en:["rain","snow","wind","storm","cloud","sun","moon","star","fog","heat"]},
+  17:{de:["Glück","Liebe","Hunger","Durst","Angst","Freude","Trauer","Mut","Stärke","Schwäche"],en:["luck","love","hunger","thirst","fear","joy","sadness","courage","strength","weakness"]},
+  18:{de:["Flasche","Tasse","Becher","Gabel","Messer","Löffel","Teller","Topf","Pfanne","Korb"],en:["bottle","cup","mug","fork","knife","spoon","plate","pot","pan","basket"]},
+  19:{de:["Computer","Handy","Tablet","Fernseher","Radio","Lampe","Stuhl","Bett","Schrank","Spiegel"],en:["computer","phone","tablet","TV","radio","lamp","chair","bed","closet","mirror"]},
+  20:{de:["Straße","Kreuzung","Ampel","Auto","Bus","Zug","Fahrrad","Motorrad","Taxi","Flugzeug"],en:["street","intersection","traffic light","car","bus","train","bicycle","motorcycle","taxi","airplane"]}
 };
 
-/* ================================
-       GAME STATE
-================================ */
+let currentLevel = null;
+let leftSelected = null;
+let correctPairs = 0;
+let attempts = 0;
 
-const STATE = { completed:[], unlocked:[1] };
+function show(page){ document.querySelectorAll('.page').forEach(p=>p.style.display='none'); document.getElementById(page).style.display='block'; }
 
-/* ================================
-       MAP FUNCTIONS
-================================ */
-
-document.addEventListener("DOMContentLoaded",()=>{
-    renderMap();
-});
-
-function renderMap(){
-    const svg=document.getElementById("mapPath");
-    svg.innerHTML="";
-
-    for(let i=1;i<=20;i++){
-        let cx = 100 + (i-1)*60;
-        let cy = 150;
-
-        const node = document.createElementNS("http://www.w3.org/2000/svg","circle");
-        node.setAttribute("cx",cx);
-        node.setAttribute("cy",cy);
-        node.setAttribute("r",20);
-
-        if(STATE.completed.includes(i)) node.classList.add("completed");
-        else if(STATE.unlocked.includes(i)) node.classList.add("unlocked");
-        else node.classList.add("locked");
-
-        node.onclick = ()=> openLevelPage(i);
-        svg.appendChild(node);
-    }
+function loadLevels(){
+  let box = document.getElementById("level-select");
+  for(let i=1;i<=20;i++){
+    let b=document.createElement("button");
+    b.className="level-btn";
+    b.textContent="Level "+i;
+    b.onclick=()=>startLevel(i);
+    box.appendChild(b);
+  }
 }
 
-function showScreen(id){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+function startLevel(num){
+  currentLevel = num;
+  show("gamePage");
+  document.getElementById("gameHeader").textContent = "Level "+num;
+  loadWords(num);
+}
+unction loadWords(num){
+  const data = LEVELS[num];
+  const de = [...data.de];
+  const en = [...data.en];
+
+  let left = document.getElementById("leftCol");
+  let right = document.getElementById("rightCol");
+  left.innerHTML = "";
+  right.innerHTML = "";
+  document.getElementById("lines").innerHTML="";
+
+  leftSelected=null;
+  correctPairs=0;
+  attempts=0;
+  document.getElementById("attempts").textContent="Attempts: 0";
+
+  en.sort(()=>Math.random()-0.5);
+
+  de.forEach((w,i)=>{
+    let btn=document.createElement("button");
+    btn.textContent=w;
+    btn.onclick=()=>selectLeft(btn,i);
+    left.appendChild(btn);
+  });
+
+  en.forEach((w,i)=>{
+    let btn=document.createElement("button");
+    btn.textContent=w;
+    btn.onclick=()=>selectRight(btn,i);
+    right.appendChild(btn);
+  });
 }
 
-function openLevelPage(level){
-    const list=document.getElementById("level-select");
-    list.innerHTML="";
-
-    for(let i=1;i<=20;i++){
-        const btn=document.createElement("button");
-        btn.textContent=`Level ${i}`;
-        btn.classList.add("level-button");
-
-        if(STATE.completed.includes(i)) btn.classList.add("completed");
-        else if(STATE.unlocked.includes(i)) btn.classList.add("unlocked");
-        else btn.classList.add("locked");
-
-        btn.onclick = ()=>{
-            if(!STATE.unlocked.includes(i)) return;
-            startLevel(i);
-        };
-
-        list.appendChild(btn);
-    }
-
-    showScreen("level-page");
+function selectLeft(btn,i){
+  leftSelected={btn,index:i};
+  document.querySelectorAll('#leftCol button').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
 }
 
-/* ================================
-          GAME LOGIC
-================================ */
+function selectRight(btn,i){
+  if(!leftSelected) return;
 
-let current = null;
+  attempts++;
+  document.getElementById("attempts").textContent="Attempts: "+attempts;
 
-function startLevel(level){
-    current=level;
-    showScreen("game");
-    loadLevel(level);
+  if(i===leftSelected.index){
+    leftSelected.btn.classList.add('correct');
+    btn.classList.add('correct');
+    drawLine(leftSelected.btn,btn);
+    correctPairs++;
+  } else {
+    leftSelected.btn.classList.add('wrong');
+    btn.classList.add('wrong');
+    setTimeout(()=>{
+      leftSelected.btn.classList.remove('wrong');
+      btn.classList.remove('wrong');
+    },500);
+  }
+
+  leftSelected=null;
+  document.querySelectorAll('#leftCol button').forEach(b=>b.classList.remove('selected'));
 }
 
-function loadLevel(level){
-    document.getElementById("game-tier").textContent="A1";
-    document.getElementById("game-level").textContent=level;
-
-    const stage=LEVELS.A1[level];
-
-    const left=document.getElementById("leftCol");
-    const right=document.getElementById("rightCol");
-    const lines=document.getElementById("lineArea");
-
-    left.innerHTML="";
-    right.innerHTML="";
-    lines.innerHTML="";
-    document.getElementById("attempts").textContent="0";
-
-    let attempts=0;
-    let matched=0;
-
-    let de=[...stage.de];
-    let en=[...stage.en];
-
-    shuffle(de);
-    shuffle(en);
-
-    let selected=null;
-
-    de.forEach(w=>{
-        const b=document.createElement("button");
-        b.classList.add("word-button");
-        b.textContent=w;
-        b.onclick=()=>selected=b;
-        left.appendChild(b);
-    });
-
-    en.forEach(w=>{
-        const b=document.createElement("button");
-        b.classList.add("word-button");
-        b.textContent=w;
-
-        b.onclick=()=>{
-            if(!selected) return;
-            attempts++;
-            document.getElementById("attempts").textContent=attempts;
-
-            const leftW=selected.textContent;
-            const rightW=b.textContent;
-
-            const idx = stage.de.indexOf(leftW);
-
-            if(stage.en[idx]===rightW){
-                selected.style.background="#31d737";
-                b.style.background="#31d737";
-                drawLine(selected,b);
-                matched++;
-
-                if(matched===10){
-
-                    if(!STATE.completed.includes(level))
-                        STATE.completed.push(level);
-
-                    if(level<20 && !STATE.unlocked.includes(level+1))
-                        STATE.unlocked.push(level+1);
-
-                    renderMap();
-
-                    setTimeout(()=>{
-                        alert("Level Completed!");
-                        showScreen("level-page");
-                    },400);
-                }
-
-            } else {
-                selected.style.background="#ff4c4c";
-                b.style.background="#ff4c4c";
-                setTimeout(()=>{
-                    selected.style.background="#f0f0f0";
-                    b.style.background="#f0f0f0";
-                },300);
-            }
-
-            selected=null;
-        };
-
-        right.appendChild(b);
-    });
-
-
-    function drawLine(a,b){
-        const svg=lines;
-
-        function pos(el){
-            let r=el.getBoundingClientRect();
-            let p=svg.getBoundingClientRect();
-            return {x:r.left-p.left+r.width/2,y:r.top-p.top+r.height/2};
-        }
-
-        let A=pos(a), B=pos(b);
-
-        let line=document.createElementNS("http://www.w3.org/2000/svg","line");
-        line.setAttribute("x1",A.x);
-        line.setAttribute("y1",A.y);
-        line.setAttribute("x2",B.x);
-        line.setAttribute("y2",B.y);
-        line.setAttribute("stroke","lime");
-        line.setAttribute("stroke-width","4");
-        svg.appendChild(line);
-    }
+function drawLine(a,b){
+  const svg=document.getElementById("lines");
+  let r1=a.getBoundingClientRect();
+  let r2=b.getBoundingClientRect();
+  let line=document.createElementNS("http://www.w3.org/2000/svg","line");
+  line.setAttribute("x1",r1.right);
+  line.setAttribute("y1",r1.top+ r1.height/2 -150);
+  line.setAttribute("x2",r2.left);
+  line.setAttribute("y2",r2.top+ r2.height/2 -150);
+  line.setAttribute("stroke","green");
+  svg.appendChild(line);
 }
 
-function shuffle(a){
-    for(let i=a.length-1;i>0;i--){
-        let j=Math.floor(Math.random()*(i+1));
-        [a[i],a[j]]=[a[j],a[i]];
-    }
-}
-</script>
+document.getElementById("retryBtn").onclick=()=>loadWords(currentLevel);
+document.getElementById("backBtn").onclick=()=>show("mainPage");
 
-</body>
+loadLevels();
+</script></body>
 </html>
