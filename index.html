@@ -1,326 +1,267 @@
 <!DOCTYPE html><html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>German Master — Pro Trainer</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Word Match Game</title>
 <style>
-  :root{
-    --bg:#0b1220; --card:#09101a; --muted:#94a3b8; --accent:#ff9500; --accent-2:#00c853; --danger:#ff4c4c; --glass: rgba(255,255,255,0.03);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;}
-  body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#071326 0%, #071b2a 100%);color:#e6eef8}
-  .app{max-width:1200px;margin:20px auto;padding:18px}header{display:flex;gap:12px;align-items:center;justify-content:space-between} h1{margin:0;font-size:20px} .top-stats{display:flex;gap:8px;align-items:center} .stat{background:var(--glass);padding:8px 12px;border-radius:999px;font-size:13px;color:var(--muted)}
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }header {
+    background: #ffffff;
+    padding: 20px;
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 
-/* layout */ .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6)} .main-row{display:grid;grid-template-columns:330px 1fr;gap:18px;margin-top:18px}
+#menu, #gameArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
-/* left panel (map, controls) */ .left{display:flex;flex-direction:column;gap:12px} .controls{display:flex;gap:8px;flex-wrap:wrap} .btn{background:var(--accent);border:none;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600} .ghost{background:transparent;border:1px solid rgba(255,255,255,0.05);padding:8px 10px;border-radius:10px;color:var(--muted);cursor:pointer}
+.btn {
+    background: #ffffff;
+    border: 2px solid #333;
+    padding: 15px 35px;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px;
+    color: #000;
+    transition: 0.2s;
+}
 
-/* map */ .map-wrap{height:420px;overflow:auto;padding:8px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)} .map-row{display:flex;gap:10px;align-items:center;padding:10px} .map-node{width:56px;height:56px;border-radius:28px;background:#fff;color:#07121b;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(2,6,23,0.5);transition:transform .18s,opacity .18s} .map-node.locked{background:#0b1320;color:#345;opacity:.5} .map-node.unlocked{background:#fff;color:#07121b} .map-node.completed{background:var(--accent-2);color:#062014} .map-label{font-size:13px;color:var(--muted);min-width:48px;text-align:center}
+.btn:hover {
+    background: #e5e5e5;
+}
 
-/* right panel */ .right{display:flex;flex-direction:column;gap:12px} .level-header{display:flex;align-items:center;justify-content:space-between} .level-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-height:360px;overflow:auto;padding:10px} .level-btn{background:#fff;color:#000;border-radius:10px;padding:10px;font-weight:700;cursor:pointer;border:2px solid rgba(0,0,0,0.06)} .level-btn.locked{background:transparent;color:#4b5563;border:2px dashed rgba(255,255,255,0.03);cursor:not-allowed} .level-btn.current{border:3px solid var(--accent)} .level-btn.completed{background:var(--accent-2);color:#04160c}
+#levels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+    width: 90%;
+}
 
-/* game view */ .game{display:none;flex-direction:column;gap:12px} .game.active{display:flex} .game-top{display:flex;align-items:center;justify-content:space-between;gap:12px} .cols{display:flex;gap:18px} .col{flex:1;background:var(--glass);padding:12px;border-radius:10px;min-height:320px;position:relative} .word-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px} .word-btn{background:#fff;color:#000;padding:10px;border-radius:8px;border:2px solid rgba(0,0,0,0.06);cursor:pointer;transition:transform .12s,box-shadow .12s} .word-btn.selected{background:#9a9a9a;color:#fff} .word-btn.correct{background:var(--accent-2);color:#04160c} .word-btn.wrong{animation:wrongAnim .5s forwards} @keyframes wrongAnim{0%{background:var(--danger);color:#fff}100%{background:#fff;color:#000}}
+.levelBtn {
+    padding: 15px;
+    background: #fff;
+    border: 2px solid #444;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+    cursor: pointer;
+    color: #000;
+}
 
-/* svg lines overlay */ .svg-wrap{position:relative} svg#lineCanvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.levelBtn.locked {
+    background: #999;
+    color: #555;
+    border-color: #777;
+    cursor: default;
+}
 
-/* footer */ .footer{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:12px} .small{font-size:13px;color:var(--muted)}
+#gameArea {
+    display: none;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    padding-top: 40px;
+}
 
-/* responsive */ @media(max-width:980px){ .main-row{grid-template-columns:1fr} .map-wrap{height:220px} } </style>
+.column {
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
 
+.wordBtn {
+    width: 70%;
+    padding: 15px;
+    background: #fff;
+    border: 2px solid #222;
+    color: #000;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+#topControls {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+</style>
 </head>
-<body>
-<div class="app">
-  <header>
-    <div>
-      <h1>German Master — Pro Trainer</h1>
-      <div class="small">Match German ↔ English • 20 A1 levels included • Import more packs</div>
-    </div>
-    <div class="top-stats">
-      <div class="stat" id="xpBadge">XP: 0</div>
-      <div class="stat" id="streakBadge">Streak: 0 🔥</div>
-      <div class="stat" id="crownsBadge">Crowns: 0 👑</div>
-    </div>
-  </header>  <div class="main-row">
-    <div class="left">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Course Map (A1)</strong>
-          <div>
-            <button class="ghost" id="exportBtn">Export</button>
-            <input type="file" id="importFile" style="display:none">
-            <button class="ghost" id="importBtn">Import</button>
-          </div>
-        </div>
-        <div class="map-wrap" id="mapWrap">
-          <!-- dynamic map rows -->
-        </div>
-      </div><div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <strong>Controls</strong>
-      <div class="small">Pro features</div>
-    </div>
-    <div class="controls">
-      <button class="btn" id="resumeBtn">Resume</button>
-      <button class="ghost" id="resetBtn">Reset Progress</button>
-      <button class="ghost" id="soundBtn">Sound: On</button>
-    </div>
-  </div>
-</div>
+<body><header>Word Match Game</header><div id="menu">
+    <button class="btn" onclick="setLanguage('german')">German</button>
+    <button class="btn" onclick="setLanguage('russian')">Russian</button>
+    <button class="btn" id="startBtn">Start</button>
+    <button class="btn" onclick="showLevels()">Levels</button>
+</div><div id="levels" style="display:none;"></div><div id="gameArea">
+    <div id="topControls">
+        <button class="btn" onclick="speakSelected()">🔊 Speak</button>
+        <button class="btn" onclick="exitLevel()">Exit</button>
+    </div><div class="column" id="leftCol"></div>
+<div class="column" id="rightCol"></div>
 
-<div class="right">
-  <div class="card">
-    <div class="level-header">
-      <div><strong>Levels (A1)</strong><div class="small">Tap a level to play</div></div>
-      <div>
-        <select id="tierSelect"><option>A1</option></select>
-      </div>
-    </div>
-    <div class="level-grid" id="levelGrid"></div>
-  </div>
+</div><svg id="lineCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></svg>
 
-  <div class="card game" id="gameCard">
-    <div class="game-top">
-      <div><strong id="gameTitle">Level A1 • 1</strong><div class="small" id="progressSmall"></div></div>
-      <div>
-        <button class="ghost" id="giveUpBtn">Give up</button>
-        <button class="ghost" id="retryBtn">Retry</button>
-      </div>
-    </div>
+<script>
+let current = { level: 1, language: "german" };
+let session = { selected: null, connections: [] };
 
-    <div class="svg-wrap" style="height:380px">
-      <svg id="lineCanvas"></svg>
-      <div style="position:relative;display:flex;gap:12px;padding:12px;">
-        <div class="col">
-          <div style="font-weight:700;margin-bottom:8px">German</div>
-          <div class="word-grid" id="leftCol"></div>
-        </div>
-        <div class="col">
-          <div style="font-weight:700;margin-bottom:8px">English</div>
-          <div class="word-grid" id="rightCol"></div>
-        </div>
-      </div>
-    </div>
+function setLanguage(lang){
+    current.language = lang;
+    alert("Language set to: " + lang);
+}
 
-    <div class="footer">
-      <div class="small">Attempts: <span id="attempts">0</span></div>
-      <div>
-        <button class="ghost" id="ttsBtn">Speak</button>
-        <button class="btn" id="nextBtn" style="display:none">Next Level</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-  </div>
-</div><script>
-/* ========== DATA ========== */
-const TIERS = ['A1'];
-const LEVELS_PER_TIER = 20; // we include 20 levels for now
-
-// 20 A1 levels (10 words each)
 const LEVELS = {
-  A1: {
-    1:{de:["ich","du","er","sie","es","wir","ihr","sie","sein","haben"], en:["I","you","he","she","it","we","you (pl)","they","to be","to have"]},
-    2:{de:["Hallo","Tschüss","Danke","Bitte","Ja","Nein","Vielleicht","Wer","Was","Wo"], en:["Hello","Bye","Thanks","Please","Yes","No","Maybe","Who","What","Where"]},
-    3:{de:["Haus","Auto","Straße","Zimmer","Tür","Fenster","Stuhl","Tisch","Bett","Lampe"], en:["house","car","street","room","door","window","chair","table","bed","lamp"]},
-    4:{de:["essen","trinken","gehen","kommen","sehen","machen","geben","nehmen","sprechen","verstehen"], en:["eat","drink","go","come","see","do/make","give","take","speak","understand"]},
-    5:{de:["heute","morgen","gestern","später","jetzt","immer","manchmal","selten","nie","bald"], en:["today","tomorrow","yesterday","later","now","always","sometimes","rarely","never","soon"]},
-    6:{de:["Hund","Katze","Vogel","Fisch","Kuh","Pferd","Schwein","Huhn","Schaf","Bär"], en:["dog","cat","bird","fish","cow","horse","pig","chicken","sheep","bear"]},
-    7:{de:["rot","blau","grün","gelb","schwarz","weiß","grau","braun","orange","rosa"], en:["red","blue","green","yellow","black","white","gray","brown","orange","pink"]},
-    8:{de:["eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn"], en:["one","two","three","four","five","six","seven","eight","nine","ten"]},
-    9:{de:["Mutter","Vater","Bruder","Schwester","Familie","Kind","Onkel","Tante","Freund","Oma"], en:["mother","father","brother","sister","family","child","uncle","aunt","friend","grandma"]},
-    10:{de:["Frühstück","Mittagessen","Abendessen","Apfel","Brot","Wasser","Kaffee","Tee","Milch","Saft"], en:["breakfast","lunch","dinner","apple","bread","water","coffee","tea","milk","juice"]},
-    11:{de:["lernen","schreiben","lesen","fragen","antworten","schlafen","arbeiten","spielen","laufen","fahren"], en:["learn","write","read","ask","answer","sleep","work","play","run","drive"]},
-    12:{de:["Kopf","Hand","Bein","Fuß","Auge","Ohr","Mund","Nase","Hals","Haar"], en:["head","hand","leg","foot","eye","ear","mouth","nose","neck","hair"]},
-    13:{de:["warm","kalt","heiß","kühl","trocken","nass","schnell","langsam","leicht","schwer"], en:["warm","cold","hot","cool","dry","wet","fast","slow","easy","heavy"]},
-    14:{de:["Stadt","Dorf","Park","Laden","Schule","Krankenhaus","Bank","Hotel","Bahnhof","Flughafen"], en:["city","village","park","store","school","hospital","bank","hotel","train station","airport"]},
-    15:{de:["Frage","Antwort","Wort","Satz","Buch","Papier","Stift","Heft","Lehrer","Schüler"], en:["question","answer","word","sentence","book","paper","pen","notebook","teacher","student"]},
-    16:{de:["früh","spät","hoch","niedrig","langsam","schnell","nah","weit","sauber","schmutzig"], en:["early","late","high","low","slow","fast","near","far","clean","dirty"]},
-    17:{de:["Morgen","Abend","Nacht","Frühling","Sommer","Herbst","Winter","Woche","Monat","Jahr"], en:["morning","evening","night","spring","summer","autumn","winter","week","month","year"]},
-    18:{de:["Kochen","Backen","Reisen","Lesen","Spielen","Schwimmen","Singen","Zeichnen","Bauen","Fahren"], en:["cooking","baking","traveling","reading","playing","swimming","singing","drawing","building","driving"]},
-    19:{de:["Arbeit","Geld","Zeit","Plan","Ziel","Problem","Lösung","Weg","Ort","Nummer"], en:["work","money","time","plan","goal","problem","solution","way","place","number"]},
-    20:{de:["kaufen","verkaufen","öffnen","schließen","tragen","ziehen","drücken","fallen","stehen","sitzen"], en:["buy","sell","open","close","carry","pull","push","fall","stand","sit"]}
-  }
+    german: Array.from({length:20},()=>[
+        {left:"Haus", right:"Kuća"},
+        {left:"Wasser", right:"Voda"},
+        {left:"Baum", right:"Drvo"},
+        {left:"Hund", right:"Pas"},
+        {left:"Tag", right:"Dan"}
+    ]),
+
+    russian: Array.from({length:20},()=>[
+        {left:"Дом", right:"Kuća"},
+        {left:"Вода", right:"Voda"},
+        {left:"Дерево", right:"Drvo"},
+        {left:"Собака", right:"Pas"},
+        {left:"День", right:"Dan"}
+    ])
 };
 
-/* ========== STORAGE ========== */
-const STORAGE_KEY = 'gm_pro_v1';
-let profile = { xp:0, streak:0, crowns:0, sound:true, levelStatus: {} };
-
-function loadProfile(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw) try{ profile = JSON.parse(raw); }catch(e){}
-  // init levelStatus
-  if(!profile.levelStatus['A1']){
-    profile.levelStatus['A1'] = Array(LEVELS_PER_TIER).fill('locked');
-    profile.levelStatus['A1'][0] = 'unlocked';
-  }
-  saveProfile();
+function speak(text){
+    let ut = new SpeechSynthesisUtterance(text);
+    ut.lang = current.language === "german" ? "de-DE" : "ru-RU";
+    speechSynthesis.speak(ut);
 }
-function saveProfile(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); updateBadges(); }
-function exportProfile(){ const blob = new Blob([JSON.stringify(profile, null, 2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='gm_profile.json'; a.click(); URL.revokeObjectURL(url); }
-function importProfile(file){ const r=new FileReader(); r.onload=()=>{ try{ profile = JSON.parse(r.result); saveProfile(); renderMap(); renderLevels(); alert('Imported profile'); }catch(e){ alert('Invalid file'); } }; r.readAsText(file); }
 
-/* ========== UI ========== */
-const mapWrap = document.getElementById('mapWrap');
-const levelGrid = document.getElementById('levelGrid');
-const gameCard = document.getElementById('gameCard');
-const leftCol = document.getElementById('leftCol');
-const rightCol = document.getElementById('rightCol');
-const lineCanvas = document.getElementById('lineCanvas');
-let current = { tier:'A1', level:1 };
-let session = { selected: null, attempts:0, correct:0 };
+function speakSelected(){
+    if(session.selected) speak(session.selected.word);
+}
 
-/* ========== Sounds (tiny tones) ========== */
-const sounds = {
-  correct: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=',
-  wrong: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=',
-  level: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA='
+document.getElementById("startBtn").onclick = ()=>{
+    openLevel(current.level);
 };
-function play(kind){ if(!profile.sound) return; try{ const a=new Audio(sounds[kind]); a.play(); }catch(e){} }
 
-/* ========== RENDER MAP & LEVELS ========== */
-function renderMap(){
-  mapWrap.innerHTML='';
-  const perRow = 5;
-  const total = LEVELS_PER_TIER;
-  for(let r=0;r<Math.ceil(total/perRow);r++){
-    const row = document.createElement('div'); row.className='map-row';
-    for(let c=0;c<perRow;c++){
-      const idx = r*perRow + c + 1;
-      if(idx>total) break;
-      const node = document.createElement('div');
-      const status = profile.levelStatus['A1'][idx-1] || 'locked';
-      node.className = 'map-node '+status;
-      node.innerText = idx;
-      node.onclick = ()=> { if(status!=='locked'){ openLevel('A1', idx); } };
-      row.appendChild(node);
+function showLevels(){
+    document.getElementById("menu").style.display="none";
+    let lv = document.getElementById("levels");
+    lv.style.display="grid";
+    lv.innerHTML = "";
+
+    for(let i=1;i<=20;i++){
+        let b = document.createElement("div");
+        b.className="levelBtn";
+        b.innerText="Level "+i;
+        b.onclick = ()=>openLevel(i);
+        lv.appendChild(b);
     }
-    mapWrap.appendChild(row);
-  }
 }
 
-function renderLevels(){
-  levelGrid.innerHTML='';
-  for(let i=1;i<=LEVELS_PER_TIER;i++){
-    const btn = document.createElement('button');
-    const st = profile.levelStatus['A1'][i-1] || 'locked';
-    btn.className = 'level-btn '+st + (i===current.level? ' current':'');
-    btn.innerText = 'Level '+i;
-    btn.onclick = ()=>{ if(st!=='locked') openLevel('A1', i); };
-    levelGrid.appendChild(btn);
-  }
+function openLevel(n){
+    current.level = n;
+    document.getElementById("menu").style.display="none";
+    document.getElementById("levels").style.display="none";
+    document.getElementById("gameArea").style.display="flex";
+    loadLevel();
 }
 
-function updateBadges(){ document.getElementById('xpBadge').innerText = 'XP: '+profile.xp; document.getElementById('streakBadge').innerText='Streak: '+profile.streak+' 🔥'; document.getElementById('crownsBadge').innerText='Crowns: '+profile.crowns+' 👑'; }
+function loadLevel(){
+    session.selected = null;
+    session.connections = [];
 
-/* ========== LEVEL / GAME FLOW ========== */
-function openLevel(tier, level){ current={tier,level}; renderLevels(); startSession(); }
+    let left = document.getElementById("leftCol");
+    let right = document.getElementById("rightCol");
 
-function startSession(){
-  // prepare UI
-  document.getElementById('gameTitle').innerText = `${current.tier} • Level ${current.level}`;
-  document.getElementById('progressSmall').innerText = `${profile.levelStatus['A1'][current.level-1]||'locked'}`;
-  document.getElementById('nextBtn').style.display='none';
-  session = { selected:null, attempts:0, correct:0 };
-  leftCol.innerHTML = ''; rightCol.innerHTML = ''; lineCanvas.innerHTML='';
+    left.innerHTML="";
+    right.innerHTML="";
 
-  const stage = LEVELS[current.tier][current.level];
-  const left = shuffle(stage.de.slice());
-  const right = shuffle(stage.en.slice());
+    let data = LEVELS[current.language][current.level-1];
 
-  left.forEach((w,i)=>{
-    const b = document.createElement('button'); b.className='word-btn'; b.innerText = w; b.onclick = ()=> selectLeft(b, w); leftCol.appendChild(b);
-  });
-  right.forEach((w,i)=>{
-    const b = document.createElement('button'); b.className='word-btn'; b.innerText = w; b.onclick = ()=> selectRight(b, w); rightCol.appendChild(b);
-  });
+    data.forEach((pair,i)=>{
+        let b=document.createElement("button");
+        b.className="wordBtn";
+        b.innerText = pair.left;
+        b.onclick = ()=>selectWord("left", pair.left, i, b);
+        left.appendChild(b);
+    });
 
-  document.getElementById('attempts').innerText = 0;
-  document.getElementById('gameCard').classList.add('active');
-  // animate in
-  document.getElementById('gameCard').scrollIntoView({behavior:'smooth'});
+    data.forEach((pair,i)=>{
+        let b=document.createElement("button");
+        b.className="wordBtn";
+        b.innerText = pair.right;
+        b.onclick = ()=>selectWord("right", pair.right, i, b);
+        right.appendChild(b);
+    });
+
+    drawLines();
 }
 
-function selectLeft(btn, word){
-  // deselect
-  document.querySelectorAll('#leftCol .word-btn').forEach(x=>x.classList.remove('selected'));
-  btn.classList.add('selected'); session.selected = {btn,word};
-}
-
-function selectRight(btn, word){
-  if(!session.selected) return;
-  session.attempts++; document.getElementById('attempts').innerText = session.attempts;
-  const leftWord = session.selected.word;
-  // find correct translation index
-  const idx = LEVELS[current.tier][current.level].de.indexOf(leftWord);
-  const correct = LEVELS[current.tier][current.level].en[idx];
-  if(correct === word){
-    // correct
-    session.selected.btn.classList.remove('selected');
-    session.selected.btn.classList.add('correct');
-    btn.classList.add('correct');
-    drawLine(session.selected.btn, btn, '--accent-2');
-    session.correct++;
-    play('correct');
-    profile.xp += 10; saveProfile();
-    if(session.correct >= LEVELS[current.tier][current.level].de.length){
-      levelComplete();
+function selectWord(side, word, index, btn){
+    if(!session.selected){
+        session.selected = { side, word, index, btn };
+        btn.style.background = "#d0ffd0";
+    } else {
+        if(session.selected.side !== side){
+            session.connections.push({i1: session.selected.index, i2: index});
+            session.selected.btn.style.background = "#fff";
+            btn.style.background = "#fff";
+            session.selected = null;
+            drawLines();
+        } else {
+            session.selected.btn.style.background = "#fff";
+            session.selected = null;
+        }
     }
-  } else {
-    // wrong
-    session.selected.btn.classList.add('wrong'); btn.classList.add('wrong');
-    play('wrong');
-    setTimeout(()=>{ session.selected && session.selected.btn.classList.remove('wrong'); btn.classList.remove('wrong'); },500);
-    profile.xp += 1; saveProfile();
-  }
-  session.selected = null;
 }
 
-function levelComplete(){
-  profile.crowns += 1; profile.streak += 1; profile.xp += 50;
-  profile.levelStatus['A1'][current.level-1] = 'completed';
-  if(current.level < LEVELS_PER_TIER) profile.levelStatus['A1'][current.level] = profile.levelStatus['A1'][current.level] === 'locked' ? 'unlocked' : profile.levelStatus['A1'][current.level];
-  saveProfile(); renderMap(); renderLevels(); play('level');
-  document.getElementById('nextBtn').style.display='inline-block';
+function drawLines(){
+    const svg = document.getElementById("lineCanvas");
+    svg.innerHTML = "";
+
+    let leftBtns = document.querySelectorAll('#leftCol .wordBtn');
+    let rightBtns = document.querySelectorAll('#rightCol .wordBtn');
+
+    session.connections.forEach(c=>{
+        let l = leftBtns[c.i1].getBoundingClientRect();
+        let r = rightBtns[c.i2].getBoundingClientRect();
+
+        let line = document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("x1", l.right);
+        line.setAttribute("y1", l.top + l.height/2);
+        line.setAttribute("x2", r.left);
+        line.setAttribute("y2", r.top + r.height/2);
+        line.setAttribute("stroke", "black");
+        line.setAttribute("stroke-width", "3");
+        svg.appendChild(line);
+    });
 }
 
-function nextLevel(){ if(current.level < LEVELS_PER_TIER) openLevel('A1', current.level+1); }
-
-function giveUp(){ if(confirm('Give up?')){ renderLevels(); } }
-
-/* ========== RENDER LINE ========== */
-function drawLine(a,b){
-  const svg = lineCanvas;
-  const rA=a.getBoundingClientRect(); const rB=b.getBoundingClientRect(); const p=svg.getBoundingClientRect();
-  const x1 = rA.left + rA.width/2 - p.left; const y1 = rA.top + rA.height/2 - p.top;
-  const x2 = rB.left + rB.width/2 - p.left; const y2 = rB.top + rB.height/2 - p.top;
-  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-  line.setAttribute('x1',x1); line.setAttribute('y1',y1); line.setAttribute('x2',x2); line.setAttribute('y2',y2);
-  line.setAttribute('stroke','lime'); line.setAttribute('stroke-width','4'); svg.appendChild(line);
+function exitLevel(){
+    document.getElementById("gameArea").style.display="none";
+    document.getElementById("menu").style.display="flex";
 }
-
-/* ========== UTIL ========== */
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
-
-/* ========== INIT + EVENTS ========== */
-loadProfile(); renderMap(); renderLevels(); updateBadges();
-
-// buttons
-document.getElementById('importBtn').onclick = ()=>document.getElementById('importFile').click();
-document.getElementById('importFile').onchange = (e)=>importProfile(e.target.files[0]);
-document.getElementById('exportBtn').onclick = ()=>exportProfile();
-document.getElementById('resetBtn').onclick = ()=>{ if(confirm('Reset progress?')){ localStorage.removeItem(STORAGE_KEY); profile={xp:0,streak:0,crowns:0,sound:true,levelStatus:{}}; loadProfile(); renderMap(); renderLevels(); } };
-document.getElementById('resumeBtn').onclick = ()=>openLevel('A1', profile.levelStatus['A1'].findIndex(s=>s!=='completed')+1 || 1);
-document.getElementById('soundBtn').onclick = ()=>{ profile.sound = !profile.sound; document.getElementById('soundBtn').innerText = 'Sound: ' + (profile.sound? 'On':'Off'); saveProfile(); };
-document.getElementById('retryBtn').onclick = ()=>startSession();
-document.getElementById('giveUpBtn').onclick = ()=>giveUp();
-document.getElementById('nextBtn').onclick = ()=>nextLevel();
-document.getElementById('ttsBtn').onclick = ()=>{ if(session.selected) speak(session.selected.word); };
-
-function speak(text){ try{ const u = new SpeechSynthesisUtterance(text); u.lang='de-DE'; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
-
 </script></body>
 </html>
